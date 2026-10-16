@@ -1,0 +1,47 @@
+@model AsilioCabezaAlgodon.Entidades.Paciente
+
+@{
+    ViewData["Title"] = "Registrar Anciano";
+}
+
+<div class="text-center mb-4">
+    <h1>Registrar Anciano</h1>
+    <p class="lead">Ingrese la información del paciente</p>
+</div>
+
+<form asp-action="Create" method="post">
+
+    <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <input asp-for="Nombre" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Apellido</label>
+        <input asp-for="Apellido" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Fecha de Nacimiento</label>
+        <input asp-for="FechaNacimiento" type="date" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Teléfono</label>
+        <input asp-for="Telefono" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Dirección</label>
+        <input asp-for="Direccion" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Guardar
+    </button>
+
+    <a href="/Paciente" class="btn btn-secondary">
+        Cancelar
+    </a>
+
+</form>

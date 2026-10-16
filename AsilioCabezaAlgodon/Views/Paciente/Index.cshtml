@@ -1,0 +1,43 @@
+@model List<AsilioCabezaAlgodon.Entidades.Paciente>
+
+@{
+    ViewData["Title"] = "Registro de Ancianos";
+}
+
+<div class="text-center mb-4">
+    <h1>Registro de Ancianos</h1>
+    <p class="lead">Pacientes registrados en el Asilo Cabeza de Algodón</p>
+</div>
+
+<div class="mb-3">
+    <a asp-controller="Paciente"
+   asp-action="Create"
+   class="btn btn-primary">
+    Registrar Anciano
+</a>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Fecha de Nacimiento</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var paciente in Model)
+        {
+            <tr>
+                <td>@paciente.Nombre</td>
+                <td>@paciente.Apellido</td>
+                <td>@paciente.FechaNacimiento.ToShortDateString()</td>
+                <td>@paciente.Telefono</td>
+                <td>@paciente.Direccion</td>
+            </tr>
+        }
+    </tbody>
+</table>
