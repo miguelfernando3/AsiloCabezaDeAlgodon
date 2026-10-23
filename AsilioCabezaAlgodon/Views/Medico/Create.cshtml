@@ -1,0 +1,70 @@
+
+@model AsilioCabezaAlgodon.Entidades.Medico
+
+@{
+    ViewData["Title"] = "Registrar Médico";
+}
+
+<div class="container mt-4">
+
+    <h2>Registrar Médico</h2>
+    <p>Ingrese los datos del médico y su especialidad.</p>
+
+    <form asp-controller="Medico" asp-action="Create" method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly"
+             class="text-danger"></div>
+
+        <div class="mb-3">
+            <label asp-for="Nombre" class="form-label">Nombre</label>
+            <input asp-for="Nombre" class="form-control" required />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Apellido" class="form-label">Apellido</label>
+            <input asp-for="Apellido" class="form-control" required />
+            <span asp-validation-for="Apellido" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Especialidad" class="form-label">
+                Especialidad
+            </label>
+            <input asp-for="Especialidad" class="form-control"
+                   placeholder="Ejemplo: Medicina General" required />
+            <span asp-validation-for="Especialidad"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Telefono" class="form-label">Teléfono</label>
+            <input asp-for="Telefono" class="form-control" required />
+            <span asp-validation-for="Telefono" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Correo" class="form-label">Correo</label>
+            <input asp-for="Correo" type="email"
+                   class="form-control" required />
+            <span asp-validation-for="Correo" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Guardar médico
+        </button>
+
+        <a asp-controller="Home" asp-action="Index"
+           class="btn btn-secondary">
+            Cancelar
+        </a>
+
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

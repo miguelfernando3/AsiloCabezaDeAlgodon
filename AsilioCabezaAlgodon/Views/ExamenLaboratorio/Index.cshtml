@@ -1,0 +1,69 @@
+
+@model List<AsilioCabezaAlgodon.Entidades.ExamenLaboratorio>
+
+@{
+    ViewData["Title"] = "Exámenes de Laboratorio";
+
+    var visitas = ViewBag.Visitas as List<AsilioCabezaAlgodon.Entidades.VisitaMedica>;
+    var citas = ViewBag.Citas as List<AsilioCabezaAlgodon.Entidades.CitaMedica>;
+    var pacientes = ViewBag.Pacientes as List<AsilioCabezaAlgodon.Entidades.Paciente>;
+}
+
+<h2>Exámenes de Laboratorio</h2>
+
+<p>Listado de exámenes realizados a los pacientes del asilo.</p>
+
+<a asp-controller="ExamenLaboratorio"
+   asp-action="Create"
+   class="btn btn-primary mb-3">
+    Registrar Examen
+</a>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Paciente</th>
+            <th>Nombre del examen</th>
+            <th>Resultado</th>
+            <th>Fecha</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var examen in Model)
+        {
+            var visita = visitas?.FirstOrDefault(
+                v => v.Id == examen.VisitaMedicaId);
+
+            var cita = citas?.FirstOrDefault(
+                c => c.Id == visita?.CitaMedicaId);
+
+            var paciente = pacientes?.FirstOrDefault(
+                p => p.Id == cita?.PacienteId);
+
+            <tr>
+                <td>
+                    @(paciente == null
+                        ? "No disponible"
+                        : paciente.Nombre + " " + paciente.Apellido)
+                </td>
+                <td>@examen.NombreExamen</td>
+                <td>@examen.Resultado</td>
+                <td>@examen.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">
+        Todavía no hay exámenes de laboratorio registrados.
+    </div>
+}
+
+<a asp-controller="Home"
+   asp-action="Index"
+   class="btn btn-secondary">
+    Volver al inicio
+</a>

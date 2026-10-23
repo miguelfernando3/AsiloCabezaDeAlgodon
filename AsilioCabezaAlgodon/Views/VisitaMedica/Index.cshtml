@@ -1,0 +1,100 @@
+
+@model List<AsilioCabezaAlgodon.Entidades.VisitaMedica>
+
+@{
+    ViewData["Title"] = "Visitas Médicas";
+
+    var citas = (List<AsilioCabezaAlgodon.Entidades.CitaMedica>)
+        ViewBag.Citas;
+
+    var pacientes = (List<AsilioCabezaAlgodon.Entidades.Paciente>)
+        ViewBag.Pacientes;
+
+    var medicos = (List<AsilioCabezaAlgodon.Entidades.Medico>)
+        ViewBag.Medicos;
+
+    var diagnosticos = (List<AsilioCabezaAlgodon.Entidades.Diagnostico>)
+        ViewBag.Diagnosticos;
+}
+
+<div class="container mt-4">
+
+    <h2>Visitas Médicas</h2>
+
+    <p>Historial de consultas médicas realizadas en el asilo.</p>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Fecha</th>
+                <th>Motivo</th>
+                <th>Diagnóstico</th>
+                <th>Observaciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var visita in Model)
+            {
+                var cita = citas.FirstOrDefault(
+                    c => c.Id == visita.CitaMedicaId);
+
+                var paciente = cita == null
+                    ? null
+                    : pacientes.FirstOrDefault(
+                        p => p.Id == cita.PacienteId);
+
+                var medico = cita == null
+                    ? null
+                    : medicos.FirstOrDefault(
+                        m => m.Id == cita.MedicoId);
+
+                var diagnostico = diagnosticos
+                    .FirstOrDefault(
+                        d => d.VisitaMedicaId == visita.Id);
+
+                <tr>
+                    <td>
+                        @(paciente == null
+                            ? "No encontrado"
+                            : paciente.Nombre + " " + paciente.Apellido)
+                    </td>
+
+                    <td>
+                        @(medico == null
+                            ? "No asignado"
+                            : medico.Nombre + " " + medico.Apellido)
+                    </td>
+
+                    <td>@visita.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+
+                    <td>@visita.Motivo</td>
+
+                    <td>
+                        @(diagnostico == null
+                            ? visita.Diagnostico
+                            : diagnostico.Descripcion)
+                    </td>
+
+                    <td>@visita.Observaciones</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            Todavía no hay visitas médicas registradas.
+        </div>
+    }
+
+    <a asp-controller="Home"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Volver al inicio
+    </a>
+
+</div>

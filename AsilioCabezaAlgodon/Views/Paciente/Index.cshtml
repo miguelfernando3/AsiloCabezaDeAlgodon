@@ -1,3 +1,4 @@
+
 @model List<AsilioCabezaAlgodon.Entidades.Paciente>
 
 @{
@@ -6,15 +7,17 @@
 
 <div class="text-center mb-4">
     <h1>Registro de Ancianos</h1>
-    <p class="lead">Pacientes registrados en el Asilo Cabeza de Algodón</p>
+    <p class="lead">
+        Pacientes registrados en el Asilo Cabeza de Algodón
+    </p>
 </div>
 
 <div class="mb-3">
     <a asp-controller="Paciente"
-   asp-action="Create"
-   class="btn btn-primary">
-    Registrar Anciano
-</a>
+       asp-action="Create"
+       class="btn btn-primary">
+        Registrar Anciano
+    </a>
 </div>
 
 <table class="table table-bordered table-striped">
@@ -25,6 +28,7 @@
             <th>Fecha de Nacimiento</th>
             <th>Teléfono</th>
             <th>Dirección</th>
+            <th>Acciones</th>
         </tr>
     </thead>
 
@@ -37,6 +41,14 @@
                 <td>@paciente.FechaNacimiento.ToShortDateString()</td>
                 <td>@paciente.Telefono</td>
                 <td>@paciente.Direccion</td>
+                <td>
+                    <a asp-controller="Paciente"
+                       asp-action="Historial"
+                       asp-route-id="@paciente.Id"
+                       class="btn btn-info btn-sm">
+                        Historial clínico
+                    </a>
+                </td>
             </tr>
         }
     </tbody>

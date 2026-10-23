@@ -185,6 +185,9 @@ namespace AsilioCabezaAlgodon.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("VisitaMedicaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("Medicamentos");

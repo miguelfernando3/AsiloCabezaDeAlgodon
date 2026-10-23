@@ -1,0 +1,196 @@
+
+@model AsilioCabezaAlgodon.Entidades.Paciente
+
+@using AsilioCabezaAlgodon.Entidades
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Historial Clínico";
+
+    var citas = ViewBag.Citas as List<CitaMedica>
+        ?? new List<CitaMedica>();
+
+    var visitas = ViewBag.Visitas as List<VisitaMedica>
+        ?? new List<VisitaMedica>();
+
+    var diagnosticos = ViewBag.Diagnosticos as List<Diagnostico>
+        ?? new List<Diagnostico>();
+
+    var medicos = ViewBag.Medicos as List<Medico>
+        ?? new List<Medico>();
+}
+
+<h1>Historial Clínico</h1>
+
+<p class="lead">
+    Información médica del paciente
+</p>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Datos del paciente</h5>
+    </div>
+
+    <div class="card-body">
+        <p>
+            <strong>Nombre:</strong>
+            @Model.Nombre @Model.Apellido
+        </p>
+
+        <p>
+            <strong>Fecha de nacimiento:</strong>
+            @Model.FechaNacimiento.ToString("dd/MM/yyyy")
+        </p>
+
+        <p>
+            <strong>Teléfono:</strong>
+            @Model.Telefono
+        </p>
+
+        <p>
+            <strong>Dirección:</strong>
+            @Model.Direccion
+        </p>
+    </div>
+</div>
+
+<h3>Consultas y diagnósticos</h3>
+
+@if (visitas.Count == 0)
+{
+    <div class="alert alert-info">
+        Este paciente todavía no tiene consultas médicas registradas.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Médico</th>
+                <th>Motivo</th>
+                <th>Diagnóstico</th>
+                <th>Observaciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var visita in visitas)
+            {
+                var cita = citas.FirstOrDefault(
+                    c => c.Id == visita.CitaMedicaId);
+
+                var medico = cita == null
+                    ? null
+                    : medicos.FirstOrDefault(
+                        m => m.Id == cita.MedicoId);
+
+                var diagnostico = diagnosticos.FirstOrDefault(
+                    d => d.VisitaMedicaId == visita.Id);
+
+                <tr>
+                    <td>
+                        @visita.Fecha.ToString("dd/MM/yyyy HH:mm")
+                    </td>
+
+                    <td>
+                        @(medico == null
+                            ? "No disponible"
+                            : medico.Nombre + " " + medico.Apellido)
+                    </td>
+
+                    <td>@visita.Motivo</td>
+
+                    <td>
+                        @(diagnostico?.Descripcion ?? visita.Diagnostico)
+                    </td>
+
+                    <td>@visita.Observaciones</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<a asp-controller="Paciente"
+   asp-action="Index"
+   class="btn btn-secondary">
+    Volver a pacientes
+</a>
+
+
+@{
+    var examenes = ViewBag.Examenes as List<AsilioCabezaAlgodon.Entidades.ExamenLaboratorio>
+                   ?? new List<AsilioCabezaAlgodon.Entidades.ExamenLaboratorio>();
+}
+
+<h3 class="mt-4">Exámenes de Laboratorio</h3>
+
+@if (examenes.Count == 0)
+{
+    <div class="alert alert-info">
+        Este paciente todavía no tiene exámenes de laboratorio registrados.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nombre del examen</th>
+                <th>Resultado</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var examen in examenes)
+            {
+                <tr>
+                    <td>@examen.NombreExamen</td>
+                    <td>@examen.Resultado</td>
+                    <td>@examen.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@{
+    var medicamentos = ViewBag.Medicamentos
+        as List<AsilioCabezaAlgodon.Entidades.Medicamento>
+        ?? new List<AsilioCabezaAlgodon.Entidades.Medicamento>();
+}
+
+<h3 class="mt-4">Medicamentos del paciente</h3>
+
+@if (medicamentos.Count == 0)
+{
+    <div class="alert alert-info">
+        Este paciente todavía no tiene medicamentos registrados.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Medicamento</th>
+                <th>Dosis</th>
+                <th>Duración</th>
+                <th>Costo (Q)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var medicamento in medicamentos)
+            {
+                <tr>
+                    <td>@medicamento.Nombre</td>
+                    <td>@medicamento.Dosis</td>
+                    <td>@medicamento.Duracion</td>
+                    <td>Q @medicamento.Costo.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

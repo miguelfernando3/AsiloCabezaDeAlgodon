@@ -1,0 +1,83 @@
+
+@model List<AsilioCabezaAlgodon.Entidades.CitaMedica>
+
+@{
+    ViewData["Title"] = "Citas Médicas";
+
+    var pacientes = (List<AsilioCabezaAlgodon.Entidades.Paciente>)
+        ViewBag.Pacientes;
+
+    var medicos = (List<AsilioCabezaAlgodon.Entidades.Medico>)
+        ViewBag.Medicos;
+}
+
+<div class="container mt-4">
+
+    <h2>Citas Médicas</h2>
+
+    <p>Listado de citas médicas del asilo.</p>
+
+    <table class="table table-bordered table-striped">
+
+        <thead>
+            <tr>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Especialidad</th>
+                <th>Fecha</th>
+                <th>Motivo</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var cita in Model)
+            {
+                var paciente = pacientes.FirstOrDefault(
+                    p => p.Id == cita.PacienteId);
+
+                var medico = medicos.FirstOrDefault(
+                    m => m.Id == cita.MedicoId);
+
+                <tr>
+                    <td>
+                        @(paciente != null
+                            ? paciente.Nombre + " " + paciente.Apellido
+                            : "No encontrado")
+                    </td>
+
+                    <td>
+                        @(medico != null
+                            ? medico.Nombre + " " + medico.Apellido
+                            : "No asignado")
+                    </td>
+
+                    <td>
+                        @(medico != null
+                            ? medico.Especialidad
+                            : "Sin especialidad")
+                    </td>
+
+                    <td>@cita.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+
+                    <td>@cita.Motivo</td>
+
+                    <td>@cita.Estado</td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            Todavía no hay citas médicas registradas.
+        </div>
+    }
+
+    <a href="/Home/Index" class="btn btn-secondary">
+        Volver al inicio
+    </a>
+
+</div>

@@ -1,0 +1,106 @@
+
+@model AsilioCabezaAlgodon.Models.RegistrarVisitaViewModel
+
+@{
+    ViewData["Title"] = "Registrar Visita Médica";
+}
+
+<div class="container mt-4">
+
+    <h2>Registrar Visita Médica</h2>
+    <p>Ingrese los datos de la consulta realizada al paciente.</p>
+
+    <form asp-controller="VisitaMedica"
+          asp-action="Create"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="All"
+             class="text-danger"></div>
+
+        <div class="mb-3">
+            <label asp-for="CitaMedicaId" class="form-label">
+                Cita médica
+            </label>
+
+            <select asp-for="CitaMedicaId"
+                    asp-items="ViewBag.ListaCitas"
+                    class="form-select">
+                <option value="0">Seleccione una cita médica</option>
+            </select>
+
+            <span asp-validation-for="CitaMedicaId"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Fecha" class="form-label">
+                Fecha de la visita
+            </label>
+
+            <input asp-for="Fecha"
+                   type="datetime-local"
+                   asp-format="{0:yyyy-MM-ddTHH:mm}"
+                   class="form-control" />
+
+            <span asp-validation-for="Fecha"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Motivo" class="form-label">
+                Motivo de la consulta
+            </label>
+
+            <textarea asp-for="Motivo"
+                      class="form-control"
+                      rows="3"></textarea>
+
+            <span asp-validation-for="Motivo"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Diagnostico" class="form-label">
+                Diagnóstico médico
+            </label>
+
+            <textarea asp-for="Diagnostico"
+                      class="form-control"
+                      rows="3"></textarea>
+
+            <span asp-validation-for="Diagnostico"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Observaciones" class="form-label">
+                Observaciones
+            </label>
+
+            <textarea asp-for="Observaciones"
+                      class="form-control"
+                      rows="3"></textarea>
+
+            <span asp-validation-for="Observaciones"
+                  class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Guardar visita
+        </button>
+
+        <a asp-controller="VisitaMedica"
+           asp-action="Index"
+           class="btn btn-secondary">
+            Cancelar
+        </a>
+
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
