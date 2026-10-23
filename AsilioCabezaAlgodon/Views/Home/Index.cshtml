@@ -1,4 +1,5 @@
-﻿@{
+﻿
+@{
     ViewData["Title"] = "Inicio";
 }
 
@@ -11,6 +12,7 @@
 
 <div class="row mt-4">
 
+    <!-- REGISTRO DE ANCIANOS -->
     <div class="col-md-4 mb-3">
         <div class="card">
             <div class="card-body text-center">
@@ -18,11 +20,17 @@
                 <p class="card-text">
                     Administrar la información de los pacientes.
                 </p>
-                <a href="/Paciente/Index" class="btn btn-primary">Ingresar</a>
+
+                <a asp-controller="Paciente"
+                   asp-action="Index"
+                   class="btn btn-primary">
+                    Ingresar
+                </a>
             </div>
         </div>
     </div>
 
+    <!-- MODULO MEDICO -->
     <div class="col-md-4 mb-3">
         <div class="card">
             <div class="card-body text-center">
@@ -30,11 +38,23 @@
                 <p class="card-text">
                     Consultas, visitas médicas y diagnósticos.
                 </p>
-                <a href="#" class="btn btn-primary">Ingresar</a>
+
+                <a asp-controller="VisitaMedica"
+                   asp-action="Index"
+                   class="btn btn-primary">
+                    Ver visitas médicas
+                </a>
+
+                <a asp-controller="CitaMedica"
+                   asp-action="Index"
+                   class="btn btn-success">
+                    Ver citas médicas
+                </a>
             </div>
         </div>
     </div>
 
+    <!-- PAGOS Y DONACIONES -->
     <div class="col-md-4 mb-3">
         <div class="card">
             <div class="card-body text-center">
@@ -42,7 +62,18 @@
                 <p class="card-text">
                     Administrar pagos y donaciones.
                 </p>
-                <a href="#" class="btn btn-primary">Ingresar</a>
+
+                <a asp-controller="Pago"
+                   asp-action="Index"
+                   class="btn btn-primary">
+                    Ver pagos
+                </a>
+
+                <a asp-controller="Donacion"
+                   asp-action="Index"
+                   class="btn btn-success">
+                    Ver donaciones
+                </a>
             </div>
         </div>
     </div>

@@ -13,6 +13,9 @@ namespace AsilioCabezaAlgodon.Models
         [DataType(DataType.Password)]
         public string Contrasena { get; set; } = "";
 
+        [Required(ErrorMessage = "Seleccione el cargo con el que desea ingresar")]
+        public string RolSeleccionado { get; set; } = "";
+
         public bool Recordarme { get; set; }
     }
 }

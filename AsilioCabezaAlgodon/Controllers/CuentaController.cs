@@ -36,30 +36,69 @@ namespace AsilioCabezaAlgodon.Controllers
                 return View(modelo);
             }
 
+            string[] rolesPermitidos =
+            {
+                "Administrador",
+                "Recepcionista",
+                "Medico",
+                "Enfermero",
+                "Laboratorio",
+                "Farmacia",
+                "Fundacion"
+            };
+
+            if (!rolesPermitidos.Contains(modelo.RolSeleccionado))
+            {
+                ModelState.AddModelError(
+                    "RolSeleccionado",
+                    "Seleccione un cargo válido.");
+
+                return View(modelo);
+            }
+
             var usuario = await _userManager.FindByEmailAsync(modelo.Correo);
 
             if (usuario != null)
             {
-                var resultado = await _signInManager.PasswordSignInAsync(
+                var resultado = await _signInManager.CheckPasswordSignInAsync(
                     usuario,
                     modelo.Contrasena,
-                    modelo.Recordarme,
                     lockoutOnFailure: true);
 
                 if (resultado.Succeeded)
                 {
+                    bool tieneRol = await _userManager.IsInRoleAsync(
+                        usuario,
+                        modelo.RolSeleccionado);
+
+                    if (!tieneRol)
+                    {
+                        ModelState.AddModelError(
+                            "",
+                            "El usuario no tiene permiso para ingresar con ese cargo.");
+
+                        return View(modelo);
+                    }
+
+                    await _signInManager.SignInAsync(
+                        usuario,
+                        modelo.Recordarme);
+
                     return RedirectToAction("Index", "Home");
                 }
 
                 if (resultado.IsLockedOut)
                 {
-                    ModelState.AddModelError("",
+                    ModelState.AddModelError(
+                        "",
                         "Cuenta bloqueada temporalmente por varios intentos fallidos.");
+
                     return View(modelo);
                 }
             }
 
-            ModelState.AddModelError("",
+            ModelState.AddModelError(
+                "",
                 "Correo o contraseña incorrectos.");
 
             return View(modelo);
@@ -71,6 +110,7 @@ namespace AsilioCabezaAlgodon.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
+
             return RedirectToAction("Login", "Cuenta");
         }
 

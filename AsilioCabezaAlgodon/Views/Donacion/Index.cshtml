@@ -1,0 +1,56 @@
+
+@model List<AsilioCabezaAlgodon.Entidades.Donacion>
+
+@{
+    ViewData["Title"] = "Donaciones";
+}
+
+<div class="container mt-4">
+
+    <h2>Registro de Donaciones</h2>
+
+    <p>Listado de donaciones recibidas por el asilo.</p>
+
+    <a asp-controller="Donacion"
+       asp-action="Create"
+       class="btn btn-primary mb-3">
+        Registrar donación
+    </a>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Donante</th>
+                <th>Monto</th>
+                <th>Fecha</th>
+                <th>Descripción</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var donacion in Model)
+            {
+                <tr>
+                    <td>@donacion.Donante</td>
+                    <td>Q @donacion.Monto.ToString("N2")</td>
+                    <td>@donacion.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@donacion.Descripcion</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            Todavía no hay donaciones registradas.
+        </div>
+    }
+
+    <a asp-controller="Home"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Volver al inicio
+    </a>
+
+</div>

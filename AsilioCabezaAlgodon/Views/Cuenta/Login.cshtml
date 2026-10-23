@@ -29,9 +29,12 @@
                         <label asp-for="Correo" class="form-label">
                             Correo electrónico
                         </label>
+
                         <input asp-for="Correo"
                                class="form-control"
-                               autocomplete="username" />
+                               autocomplete="username"
+                               placeholder="usuario@gmail.com" />
+
                         <span asp-validation-for="Correo"
                               class="text-danger"></span>
                     </div>
@@ -40,9 +43,11 @@
                         <label asp-for="Contrasena" class="form-label">
                             Contraseña
                         </label>
+
                         <input asp-for="Contrasena"
                                class="form-control"
                                autocomplete="current-password" />
+
                         <span asp-validation-for="Contrasena"
                               class="text-danger"></span>
                     </div>
@@ -50,10 +55,58 @@
                     <div class="form-check mb-3">
                         <input asp-for="Recordarme"
                                class="form-check-input" />
+
                         <label asp-for="Recordarme"
                                class="form-check-label">
                             Recordarme
                         </label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="RolSeleccionado"
+                               class="form-label">
+                            Seleccione su cargo
+                        </label>
+
+                        <select asp-for="RolSeleccionado"
+                                class="form-select">
+
+                            <option value="">
+                                -- Seleccione su cargo --
+                            </option>
+
+                            <option value="Administrador">
+                                Administrador
+                            </option>
+
+                            <option value="Recepcionista">
+                                Recepcionista
+                            </option>
+
+                            <option value="Medico">
+                                Médico
+                            </option>
+
+                            <option value="Enfermero">
+                                Enfermero
+                            </option>
+
+                            <option value="Laboratorio">
+                                Laboratorio
+                            </option>
+
+                            <option value="Farmacia">
+                                Farmacia
+                            </option>
+
+                            <option value="Fundacion">
+                                Fundación
+                            </option>
+
+                        </select>
+
+                        <span asp-validation-for="RolSeleccionado"
+                              class="text-danger"></span>
                     </div>
 
                     <button type="submit"

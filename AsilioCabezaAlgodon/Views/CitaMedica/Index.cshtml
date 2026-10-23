@@ -17,6 +17,17 @@
 
     <p>Listado de citas médicas del asilo.</p>
 
+    @if (User.IsInRole("Administrador") ||
+         User.IsInRole("Recepcionista") ||
+         User.IsInRole("Fundacion"))
+    {
+        <a asp-controller="CitaMedica"
+           asp-action="Create"
+           class="btn btn-primary mb-3">
+            Registrar Cita Médica
+        </a>
+    }
+
     <table class="table table-bordered table-striped">
 
         <thead>
@@ -58,11 +69,32 @@
                             : "Sin especialidad")
                     </td>
 
-                    <td>@cita.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        @cita.Fecha.ToString("dd/MM/yyyy HH:mm")
+                    </td>
 
                     <td>@cita.Motivo</td>
 
-                    <td>@cita.Estado</td>
+                    <td>
+                        @if (cita.Estado == "Programada")
+                        {
+                            <span class="badge bg-primary">
+                                Programada
+                            </span>
+                        }
+                        else if (cita.Estado == "Atendida")
+                        {
+                            <span class="badge bg-success">
+                                Atendida
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+                                @cita.Estado
+                            </span>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>
@@ -76,7 +108,9 @@
         </div>
     }
 
-    <a href="/Home/Index" class="btn btn-secondary">
+    <a asp-controller="Home"
+       asp-action="Index"
+       class="btn btn-secondary">
         Volver al inicio
     </a>
 

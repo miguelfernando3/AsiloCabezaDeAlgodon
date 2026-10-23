@@ -22,6 +22,15 @@
     <h2>Visitas Médicas</h2>
 
     <p>Historial de consultas médicas realizadas en el asilo.</p>
+    @if (User.IsInRole("Administrador") || User.IsInRole("Medico"))
+    {
+        <a asp-controller="VisitaMedica"
+        asp-action="Create"
+        class="btn btn-primary mb-3">
+        Registrar Visita Médica
+        </a>
+    }
+
 
     <table class="table table-bordered table-striped">
         <thead>
