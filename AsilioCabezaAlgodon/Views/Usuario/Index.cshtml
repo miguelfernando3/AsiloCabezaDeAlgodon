@@ -1,0 +1,65 @@
+
+@model List<AsilioCabezaAlgodon.Models.UsuarioListaViewModel>
+
+@{
+    ViewData["Title"] = "Administración de Usuarios";
+}
+
+<div class="container mt-4">
+
+    <h2>Administración de Usuarios</h2>
+
+    <p>
+        Listado de empleados registrados y sus respectivos cargos.
+    </p>
+
+    <a asp-controller="Usuario"
+       asp-action="Create"
+       class="btn btn-primary mb-3">
+        Registrar Nuevo Usuario
+    </a>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Correo electrónico</th>
+                <th>Cargo / Rol</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var usuario in Model)
+            {
+                <tr>
+                    <td>@usuario.Correo</td>
+                    <td>
+                        @if (string.IsNullOrEmpty(usuario.Rol))
+                        {
+                            <span class="text-danger">
+                                Sin rol asignado
+                            </span>
+                        }
+                        else
+                        {
+                            @usuario.Rol
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            Todavía no hay usuarios registrados.
+        </div>
+    }
+
+    <a asp-controller="Home"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Volver al inicio
+    </a>
+
+</div>

@@ -1,0 +1,31 @@
+
+@{
+    ViewData["Title"] = "Acceso Denegado";
+}
+
+<div class="container mt-5">
+
+    <div class="text-center">
+
+        <h2 class="text-danger">
+            Acceso Denegado
+        </h2>
+
+        <p class="lead mt-3">
+            No tienes permisos para acceder a este módulo.
+        </p>
+
+        <p>
+            Tu cuenta no cuenta con el rol necesario
+            para realizar esta operación.
+        </p>
+
+        <a asp-controller="Home"
+           asp-action="Index"
+           class="btn btn-primary mt-3">
+            Volver al inicio
+        </a>
+
+    </div>
+
+</div>

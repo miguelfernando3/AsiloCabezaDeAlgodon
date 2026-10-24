@@ -41,7 +41,11 @@ namespace AsilioCabezaAlgodon.Controllers
             return View(new CitaMedica
             {
                 Fecha = DateTime.Now,
-                Estado = "Programada"
+                Estado = "Programada",
+                CostoConsulta = 0,
+                Descuento = 0,
+                MontoPagado = 0,
+                EstadoPago = "Pendiente"
             });
         }
 
@@ -51,11 +55,14 @@ namespace AsilioCabezaAlgodon.Controllers
         [Authorize(Roles = "Administrador,Recepcionista,Fundacion")]
         public async Task<IActionResult> Create(CitaMedica cita)
         {
-            // El estado lo establece el sistema
+            // El sistema establece el estado de la cita
             cita.Estado = "Programada";
 
-            // Evitar que la validación rechace el estado
+            // El sistema calculará el estado del pago
+            cita.EstadoPago = "Pendiente";
+
             ModelState.Remove(nameof(CitaMedica.Estado));
+            ModelState.Remove(nameof(CitaMedica.EstadoPago));
 
             // Verificar que el paciente exista
             if (!await _context.Pacientes
@@ -83,18 +90,74 @@ namespace AsilioCabezaAlgodon.Controllers
                     "Selecciona una fecha válida.");
             }
 
+            // Validar costo de consulta
+            if (cita.CostoConsulta < 0)
+            {
+                ModelState.AddModelError(
+                    "CostoConsulta",
+                    "El costo no puede ser negativo.");
+            }
+
+            // Validar descuento
+            if (cita.Descuento < 0)
+            {
+                ModelState.AddModelError(
+                    "Descuento",
+                    "El descuento no puede ser negativo.");
+            }
+
+            if (cita.Descuento > cita.CostoConsulta)
+            {
+                ModelState.AddModelError(
+                    "Descuento",
+                    "El descuento no puede superar el costo.");
+            }
+
+            // Validar monto pagado
+            if (cita.MontoPagado < 0)
+            {
+                ModelState.AddModelError(
+                    "MontoPagado",
+                    "El monto pagado no puede ser negativo.");
+            }
+
+            // Calcular el total después del descuento
+            decimal total = cita.CostoConsulta - cita.Descuento;
+
+            if (cita.MontoPagado > total)
+            {
+                ModelState.AddModelError(
+                    "MontoPagado",
+                    "El pago no puede superar el total de la consulta.");
+            }
+
             // Verificar todos los datos
             if (!ModelState.IsValid)
             {
                 await CargarListas();
                 return View(cita);
             }
-
+            // Calcular automáticamente el estado del pago
+        if (total == 0)
+        {
+            cita.EstadoPago = "Pendiente";
+            }
+            else if (cita.MontoPagado >= total)
+            {
+                cita.EstadoPago = "Pagado";
+                }
+                else if (cita.MontoPagado > 0)
+                {
+                    cita.EstadoPago = "Parcial";
+                    }
+                    else
+                    {
+                        cita.EstadoPago = "Pendiente";
+                        }
             // Guardar la cita en SQL Server
             _context.CitasMedicas.Add(cita);
             await _context.SaveChangesAsync();
 
-            // Regresar al listado
             return RedirectToAction("Index");
         }
 

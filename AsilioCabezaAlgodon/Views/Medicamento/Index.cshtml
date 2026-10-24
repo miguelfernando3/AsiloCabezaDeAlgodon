@@ -1,25 +1,42 @@
 
 @model List<AsilioCabezaAlgodon.Entidades.Medicamento>
 
+@using AsilioCabezaAlgodon.Entidades
+
 @{
     ViewData["Title"] = "Medicamentos";
+
+    var visitas = ViewBag.Visitas as List<VisitaMedica>
+                  ?? new List<VisitaMedica>();
+
+    var citas = ViewBag.Citas as List<CitaMedica>
+                ?? new List<CitaMedica>();
+
+    var pacientes = ViewBag.Pacientes as List<Paciente>
+                    ?? new List<Paciente>();
 }
 
 <div class="container mt-4">
 
     <h2>Medicamentos Registrados</h2>
 
-    <p>Listado de medicamentos y sus costos.</p>
+    <p>Listado de medicamentos, pacientes y sus costos.</p>
 
-    <a asp-controller="Medicamento"
-       asp-action="Create"
-       class="btn btn-primary mb-3">
-        Registrar Medicamento
-    </a>
+    @if (User.IsInRole("Administrador") ||
+         User.IsInRole("Medico") ||
+         User.IsInRole("Farmacia"))
+    {
+        <a asp-controller="Medicamento"
+           asp-action="Create"
+           class="btn btn-primary mb-3">
+            Registrar Medicamento
+        </a>
+    }
 
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>Paciente</th>
                 <th>Nombre</th>
                 <th>Dosis</th>
                 <th>Duración</th>
@@ -30,7 +47,34 @@
         <tbody>
             @foreach (var medicamento in Model)
             {
+                string nombrePaciente = "Sin paciente asignado";
+
+                if (medicamento.VisitaMedicaId.HasValue)
+                {
+                    var visita = visitas.FirstOrDefault(v =>
+                        v.Id == medicamento.VisitaMedicaId.Value);
+
+                    if (visita != null)
+                    {
+                        var cita = citas.FirstOrDefault(c =>
+                            c.Id == visita.CitaMedicaId);
+
+                        if (cita != null)
+                        {
+                            var paciente = pacientes.FirstOrDefault(p =>
+                                p.Id == cita.PacienteId);
+
+                            if (paciente != null)
+                            {
+                                nombrePaciente =
+                                    paciente.Nombre + " " + paciente.Apellido;
+                            }
+                        }
+                    }
+                }
+
                 <tr>
+                    <td>@nombrePaciente</td>
                     <td>@medicamento.Nombre</td>
                     <td>@medicamento.Dosis</td>
                     <td>@medicamento.Duracion</td>

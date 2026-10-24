@@ -12,13 +12,18 @@
     </p>
 </div>
 
-<div class="mb-3">
-    <a asp-controller="Paciente"
-       asp-action="Create"
-       class="btn btn-primary">
-        Registrar Anciano
-    </a>
-</div>
+@* Solo Administrador y Recepcionista pueden registrar pacientes *@
+@if (User.IsInRole("Administrador") ||
+     User.IsInRole("Recepcionista"))
+{
+    <div class="mb-3">
+        <a asp-controller="Paciente"
+           asp-action="Create"
+           class="btn btn-primary">
+            Registrar Anciano
+        </a>
+    </div>
+}
 
 <table class="table table-bordered table-striped">
     <thead>

@@ -1,10 +1,40 @@
 ﻿
 @{
     ViewData["Title"] = "Inicio";
+
+    bool administrador = User.IsInRole("Administrador");
+    bool recepcionista = User.IsInRole("Recepcionista");
+    bool medico = User.IsInRole("Medico");
+    bool enfermero = User.IsInRole("Enfermero");
+    bool laboratorio = User.IsInRole("Laboratorio");
+    bool farmacia = User.IsInRole("Farmacia");
+    bool fundacion = User.IsInRole("Fundacion");
+
+    bool verPacientes = administrador || recepcionista ||
+                        medico || enfermero;
+
+    bool verVisitas = administrador || medico || enfermero;
+
+    bool verCitas = administrador || recepcionista ||
+                    medico || enfermero;
+
+    bool verPagos = administrador || recepcionista ||
+                    fundacion;
+
+    bool verDonaciones = administrador || fundacion;
+
+    bool verMedicamentos = administrador || medico ||
+                           farmacia || fundacion;
+
+    bool verLaboratorio = administrador || medico ||
+                          laboratorio;
 }
 
 <div class="text-center">
-    <h1 class="display-4">Asilo de Ancianos Cabeza de Algodón</h1>
+    <h1 class="display-4">
+        Asilo de Ancianos Cabeza de Algodón
+    </h1>
+
     <p class="lead">
         Sistema de Administración del Asilo
     </p>
@@ -13,69 +43,171 @@
 <div class="row mt-4">
 
     <!-- REGISTRO DE ANCIANOS -->
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <h5 class="card-title">Registro de Ancianos</h5>
-                <p class="card-text">
-                    Administrar la información de los pacientes.
-                </p>
+    @if (verPacientes)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">
+                        Registro de Ancianos
+                    </h5>
 
-                <a asp-controller="Paciente"
-                   asp-action="Index"
-                   class="btn btn-primary">
-                    Ingresar
-                </a>
+                    <p class="card-text">
+                        Administrar la información de los pacientes.
+                    </p>
+
+                    <a asp-controller="Paciente"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Ingresar
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
+    }
 
     <!-- MODULO MEDICO -->
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <h5 class="card-title">Módulo Médico</h5>
-                <p class="card-text">
-                    Consultas, visitas médicas y diagnósticos.
-                </p>
+    @if (verVisitas || verCitas)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">
+                        Módulo Médico
+                    </h5>
 
-                <a asp-controller="VisitaMedica"
-                   asp-action="Index"
-                   class="btn btn-primary">
-                    Ver visitas médicas
-                </a>
+                    <p class="card-text">
+                        Consultas, visitas médicas y diagnósticos.
+                    </p>
 
-                <a asp-controller="CitaMedica"
-                   asp-action="Index"
-                   class="btn btn-success">
-                    Ver citas médicas
-                </a>
+                    @if (verVisitas)
+                    {
+                        <a asp-controller="VisitaMedica"
+                           asp-action="Index"
+                           class="btn btn-primary mb-2">
+                            Ver visitas médicas
+                        </a>
+                    }
+
+                    @if (verCitas)
+                    {
+                        <a asp-controller="CitaMedica"
+                           asp-action="Index"
+                           class="btn btn-success mb-2">
+                            Ver citas médicas
+                        </a>
+                    }
+                </div>
             </div>
         </div>
-    </div>
+    }
 
     <!-- PAGOS Y DONACIONES -->
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <h5 class="card-title">Pagos y Donaciones</h5>
-                <p class="card-text">
-                    Administrar pagos y donaciones.
-                </p>
+    @if (verPagos || verDonaciones)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">
+                        Pagos y Donaciones
+                    </h5>
 
-                <a asp-controller="Pago"
-                   asp-action="Index"
-                   class="btn btn-primary">
-                    Ver pagos
-                </a>
+                    <p class="card-text">
+                        Administrar pagos y donaciones.
+                    </p>
 
-                <a asp-controller="Donacion"
-                   asp-action="Index"
-                   class="btn btn-success">
-                    Ver donaciones
-                </a>
+                    @if (verPagos)
+                    {
+                        <a asp-controller="Pago"
+                           asp-action="Index"
+                           class="btn btn-primary mb-2">
+                            Ver pagos
+                        </a>
+                    }
+
+                    @if (verDonaciones)
+                    {
+                        <a asp-controller="Donacion"
+                           asp-action="Index"
+                           class="btn btn-success mb-2">
+                            Ver donaciones
+                        </a>
+                    }
+                </div>
             </div>
         </div>
-    </div>
+    }
+
+    <!-- MEDICAMENTOS Y FARMACIA -->
+    @if (verMedicamentos)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">
+                        Medicamentos y Farmacia
+                    </h5>
+
+                    <p class="card-text">
+                        Consultar medicamentos, tratamientos y costos.
+                    </p>
+
+                    <a asp-controller="Medicamento"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Ver medicamentos
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- LABORATORIO -->
+    @if (verLaboratorio)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">
+                        Laboratorio
+                    </h5>
+
+                    <p class="card-text">
+                        Consultar exámenes y resultados de laboratorio.
+                    </p>
+
+                    <a asp-controller="ExamenLaboratorio"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Ver exámenes
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- ADMINISTRACION DE USUARIOS -->
+    @if (administrador)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">
+                        Administración de Usuarios
+                    </h5>
+
+                    <p class="card-text">
+                        Registrar empleados y administrar sus roles.
+                    </p>
+
+                    <a asp-controller="Usuario"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Administrar usuarios
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
 
 </div>

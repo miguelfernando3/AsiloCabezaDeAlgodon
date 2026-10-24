@@ -26,6 +26,17 @@ namespace AsilioCabezaAlgodon.Controllers
                 .OrderBy(m => m.Nombre)
                 .ToListAsync();
 
+            // Obtener las visitas, citas y pacientes
+            // para identificar a quién pertenece cada medicamento
+            ViewBag.Visitas = await _context.VisitasMedicas
+                .ToListAsync();
+
+            ViewBag.Citas = await _context.CitasMedicas
+                .ToListAsync();
+
+            ViewBag.Pacientes = await _context.Pacientes
+                .ToListAsync();
+
             return View(medicamentos);
         }
 
@@ -45,7 +56,27 @@ namespace AsilioCabezaAlgodon.Controllers
         [Authorize(Roles = "Administrador,Medico,Farmacia")]
         public async Task<IActionResult> Create(Medicamento medicamento)
         {
-            // Validar el costo
+            if (string.IsNullOrWhiteSpace(medicamento.Nombre))
+            {
+                ModelState.AddModelError(
+                    "Nombre",
+                    "Ingresa el nombre del medicamento.");
+            }
+
+            if (string.IsNullOrWhiteSpace(medicamento.Dosis))
+            {
+                ModelState.AddModelError(
+                    "Dosis",
+                    "Ingresa la dosis del medicamento.");
+            }
+
+            if (string.IsNullOrWhiteSpace(medicamento.Duracion))
+            {
+                ModelState.AddModelError(
+                    "Duracion",
+                    "Ingresa la duración del tratamiento.");
+            }
+
             if (medicamento.Costo < 0)
             {
                 ModelState.AddModelError(
@@ -53,7 +84,6 @@ namespace AsilioCabezaAlgodon.Controllers
                     "El costo no puede ser negativo.");
             }
 
-            // Verificar que la visita médica exista
             if (medicamento.VisitaMedicaId.HasValue)
             {
                 bool existeVisita = await _context.VisitasMedicas
@@ -68,7 +98,6 @@ namespace AsilioCabezaAlgodon.Controllers
                 }
             }
 
-            // Si hay errores, regresar al formulario
             if (!ModelState.IsValid)
             {
                 await CargarVisitas();
@@ -76,7 +105,6 @@ namespace AsilioCabezaAlgodon.Controllers
                 return View(medicamento);
             }
 
-            // Guardar medicamento en SQL Server
             _context.Medicamentos.Add(medicamento);
 
             await _context.SaveChangesAsync();
@@ -84,7 +112,7 @@ namespace AsilioCabezaAlgodon.Controllers
             return RedirectToAction("Index");
         }
 
-        // Cargar las visitas médicas con el nombre del paciente
+        // Cargar visitas médicas con el nombre del paciente
         private async Task CargarVisitas()
         {
             var datos = await _context.VisitasMedicas

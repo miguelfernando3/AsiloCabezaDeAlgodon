@@ -8,8 +8,12 @@ namespace AsilioCabezaAlgodon.Entidades
     {
         public int Id { get; set; }
 
-        [Range(1, int.MaxValue, ErrorMessage = "Seleccione un paciente.")]
+        [Range(1, int.MaxValue,
+            ErrorMessage = "Seleccione un paciente.")]
         public int PacienteId { get; set; }
+
+        // Opcional: relacionar el pago con una cita médica
+        public int? CitaMedicaId { get; set; }
 
         [Range(typeof(decimal), "0.01", "999999999.99",
             ErrorMessage = "El monto debe ser mayor que cero.")]

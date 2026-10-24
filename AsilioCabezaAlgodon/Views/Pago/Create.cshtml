@@ -8,7 +8,7 @@
 <div class="container mt-4">
 
     <h2>Registrar Pago</h2>
-    <p>Ingrese los datos del pago realizado para el paciente.</p>
+    <p>Ingrese los datos del pago realizado.</p>
 
     <form asp-controller="Pago"
           asp-action="Create"
@@ -27,7 +27,9 @@
             <select asp-for="PacienteId"
                     asp-items="ViewBag.ListaPacientes"
                     class="form-select">
-                <option value="0">Seleccione un paciente</option>
+                <option value="0">
+                    Seleccione un paciente
+                </option>
             </select>
 
             <span asp-validation-for="PacienteId"
@@ -35,8 +37,32 @@
         </div>
 
         <div class="mb-3">
+            <label asp-for="CitaMedicaId" class="form-label">
+                Cita médica (opcional)
+            </label>
+
+            <select asp-for="CitaMedicaId"
+                    asp-items="ViewBag.ListaCitas"
+                    class="form-select">
+
+                <option value="">
+                    Pago general (sin cita médica)
+                </option>
+
+            </select>
+
+            <span asp-validation-for="CitaMedicaId"
+                  class="text-danger"></span>
+
+            <small class="text-muted">
+                Seleccione una cita si desea abonar
+                al saldo pendiente de una consulta.
+            </small>
+        </div>
+
+        <div class="mb-3">
             <label asp-for="Monto" class="form-label">
-                Monto (Q)
+                Monto del pago (Q)
             </label>
 
             <input asp-for="Monto"
@@ -71,7 +97,7 @@
 
             <input asp-for="Concepto"
                    class="form-control"
-                   placeholder="Ejemplo: Mensualidad de octubre"
+                   placeholder="Ejemplo: Abono de consulta médica"
                    required />
 
             <span asp-validation-for="Concepto"

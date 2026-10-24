@@ -8,15 +8,19 @@
 <div class="container mt-4">
 
     <h2>Registrar Cita Médica</h2>
+
     <p>Complete la información para programar una cita.</p>
 
-    <form asp-controller="CitaMedica" asp-action="Create" method="post">
+    <form asp-controller="CitaMedica"
+          asp-action="Create"
+          method="post">
 
         @Html.AntiForgeryToken()
 
         <div asp-validation-summary="ModelOnly"
              class="text-danger"></div>
 
+        <!-- PACIENTE -->
         <div class="mb-3">
             <label asp-for="PacienteId" class="form-label">
                 Paciente
@@ -32,6 +36,7 @@
                   class="text-danger"></span>
         </div>
 
+        <!-- MEDICO -->
         <div class="mb-3">
             <label asp-for="MedicoId" class="form-label">
                 Médico
@@ -47,6 +52,7 @@
                   class="text-danger"></span>
         </div>
 
+        <!-- FECHA -->
         <div class="mb-3">
             <label asp-for="Fecha" class="form-label">
                 Fecha y hora
@@ -60,6 +66,7 @@
                   class="text-danger"></span>
         </div>
 
+        <!-- MOTIVO -->
         <div class="mb-3">
             <label asp-for="Motivo" class="form-label">
                 Motivo de la cita
@@ -73,6 +80,69 @@
                   class="text-danger"></span>
         </div>
 
+        <hr />
+
+        <h4>Información económica de la consulta</h4>
+
+        <p class="text-muted">
+            Registre el costo de la consulta, el descuento
+            otorgado por la fundación y el monto abonado.
+        </p>
+
+        <!-- COSTO -->
+        <div class="mb-3">
+            <label asp-for="CostoConsulta" class="form-label">
+                Costo de consulta (Q)
+            </label>
+
+            <input asp-for="CostoConsulta"
+                   type="number"
+                   min="0"
+                   step="0.01"
+                   class="form-control" />
+
+            <span asp-validation-for="CostoConsulta"
+                  class="text-danger"></span>
+        </div>
+
+        <!-- DESCUENTO -->
+        <div class="mb-3">
+            <label asp-for="Descuento" class="form-label">
+                Descuento de la fundación (Q)
+            </label>
+
+            <input asp-for="Descuento"
+                   type="number"
+                   min="0"
+                   step="0.01"
+                   class="form-control" />
+
+            <span asp-validation-for="Descuento"
+                  class="text-danger"></span>
+        </div>
+
+        <!-- MONTO PAGADO -->
+        <div class="mb-3">
+            <label asp-for="MontoPagado" class="form-label">
+                Monto pagado (Q)
+            </label>
+
+            <input asp-for="MontoPagado"
+                   type="number"
+                   min="0"
+                   step="0.01"
+                   class="form-control" />
+
+            <span asp-validation-for="MontoPagado"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="alert alert-info">
+            El estado del pago se calculará automáticamente
+            al guardar la cita.
+        </div>
+
+        <!-- BOTONES -->
         <button type="submit" class="btn btn-primary">
             Guardar cita
         </button>

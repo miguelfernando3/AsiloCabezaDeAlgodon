@@ -30,7 +30,17 @@ namespace AsilioCabezaAlgodon.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("CostoConsulta")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Descuento")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EstadoPago")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -39,6 +49,9 @@ namespace AsilioCabezaAlgodon.Migrations
 
                     b.Property<int>("MedicoId")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("MontoPagado")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Motivo")
                         .IsRequired()
@@ -85,11 +98,13 @@ namespace AsilioCabezaAlgodon.Migrations
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("Donante")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
@@ -266,9 +281,13 @@ namespace AsilioCabezaAlgodon.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("CitaMedicaId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Concepto")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");

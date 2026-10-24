@@ -7,7 +7,7 @@ using AsilioCabezaAlgodon.Entidades;
 
 namespace AsilioCabezaAlgodon.Controllers
 {
-    [Authorize(Roles = "Administrador,Recepcionista,Enfermero")]
+    [Authorize(Roles = "Administrador,Recepcionista,Medico,Enfermero")]
     public class PacienteController : Controller
     {
         private readonly AsiloContext _context;
@@ -86,15 +86,15 @@ namespace AsilioCabezaAlgodon.Controllers
                 .Where(d => idsVisitas.Contains(d.VisitaMedicaId))
                 .ToListAsync();
 
-            // NUEVO: Buscar los exámenes de laboratorio
-            // relacionados con las visitas del paciente
+            // Buscar los exámenes de laboratorio
             var examenes = await _context.ExamenesLaboratorio
                 .Where(e => idsVisitas.Contains(e.VisitaMedicaId))
                 .OrderByDescending(e => e.Fecha)
                 .ToListAsync();
 
             // Buscar los médicos de las citas
-            var idsMedicos = citas.Select(c => c.MedicoId)
+            var idsMedicos = citas
+                .Select(c => c.MedicoId)
                 .Distinct()
                 .ToList();
 
@@ -102,21 +102,18 @@ namespace AsilioCabezaAlgodon.Controllers
                 .Where(m => idsMedicos.Contains(m.Id))
                 .ToListAsync();
 
-            // Enviar la información a la vista
+            // Buscar medicamentos asociados a las visitas
+            var medicamentos = await _context.Medicamentos
+                .Where(m => m.VisitaMedicaId.HasValue &&
+                    idsVisitas.Contains(m.VisitaMedicaId.Value))
+                .ToListAsync();
+
+            // Enviar información a la vista
             ViewBag.Citas = citas;
             ViewBag.Visitas = visitas;
             ViewBag.Diagnosticos = diagnosticos;
             ViewBag.Medicos = medicos;
-
-            // NUEVO: Enviar exámenes al historial clínico
             ViewBag.Examenes = examenes;
-            // Buscar medicamentos asociados a las visitas del paciente
-            var medicamentos = await _context.Medicamentos
-            .Where(m => m.VisitaMedicaId.HasValue &&
-                idsVisitas.Contains(m.VisitaMedicaId.Value))
-                .ToListAsync();
-                
-                // Enviar medicamentos al historial clínico
             ViewBag.Medicamentos = medicamentos;
 
             return View(paciente);

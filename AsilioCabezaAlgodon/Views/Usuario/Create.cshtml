@@ -1,0 +1,99 @@
+
+@model AsilioCabezaAlgodon.Models.RegistrarUsuarioViewModel
+
+@{
+    ViewData["Title"] = "Registrar Usuario";
+}
+
+<div class="container mt-4">
+
+    <h2>Registrar Nuevo Usuario</h2>
+
+    <p>
+        Registre un empleado y asígnele su cargo dentro del asilo.
+    </p>
+
+    <form asp-controller="Usuario"
+          asp-action="Create"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="All"
+             class="text-danger"></div>
+
+        <div class="mb-3">
+            <label asp-for="Correo" class="form-label">
+                Correo electrónico
+            </label>
+
+            <input asp-for="Correo"
+                   type="email"
+                   class="form-control"
+                   placeholder="Ejemplo: medico@asilo.com"
+                   autocomplete="off"
+                   required />
+
+            <span asp-validation-for="Correo"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Contrasena" class="form-label">
+                Contraseña
+            </label>
+
+            <input asp-for="Contrasena"
+                   type="password"
+                   class="form-control"
+                   autocomplete="new-password"
+                   required />
+
+            <span asp-validation-for="Contrasena"
+                  class="text-danger"></span>
+
+            <small class="text-muted">
+                Mínimo 8 caracteres, incluyendo una letra minúscula
+                y un número.
+            </small>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Rol" class="form-label">
+                Cargo del empleado
+            </label>
+
+            <select asp-for="Rol"
+                    class="form-select"
+                    required>
+
+                <option value="">Seleccione un cargo</option>
+
+                @foreach (string rol in ViewBag.Roles)
+                {
+                    <option value="@rol">@rol</option>
+                }
+
+            </select>
+
+            <span asp-validation-for="Rol"
+                  class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Registrar Usuario
+        </button>
+
+        <a asp-controller="Usuario"
+           asp-action="Index"
+           class="btn btn-secondary">
+            Cancelar
+        </a>
+
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

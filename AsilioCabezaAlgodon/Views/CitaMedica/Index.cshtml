@@ -15,7 +15,7 @@
 
     <h2>Citas Médicas</h2>
 
-    <p>Listado de citas médicas del asilo.</p>
+    <p>Listado de citas médicas y control de pagos del asilo.</p>
 
     @if (User.IsInRole("Administrador") ||
          User.IsInRole("Recepcionista") ||
@@ -28,78 +28,167 @@
         </a>
     }
 
-    <table class="table table-bordered table-striped">
+    <div class="table-responsive">
 
-        <thead>
-            <tr>
-                <th>Paciente</th>
-                <th>Médico</th>
-                <th>Especialidad</th>
-                <th>Fecha</th>
-                <th>Motivo</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
+        <table class="table table-bordered table-striped">
 
-        <tbody>
-            @foreach (var cita in Model)
-            {
-                var paciente = pacientes.FirstOrDefault(
-                    p => p.Id == cita.PacienteId);
-
-                var medico = medicos.FirstOrDefault(
-                    m => m.Id == cita.MedicoId);
-
+            <thead class="table-dark">
                 <tr>
-                    <td>
-                        @(paciente != null
-                            ? paciente.Nombre + " " + paciente.Apellido
-                            : "No encontrado")
-                    </td>
-
-                    <td>
-                        @(medico != null
-                            ? medico.Nombre + " " + medico.Apellido
-                            : "No asignado")
-                    </td>
-
-                    <td>
-                        @(medico != null
-                            ? medico.Especialidad
-                            : "Sin especialidad")
-                    </td>
-
-                    <td>
-                        @cita.Fecha.ToString("dd/MM/yyyy HH:mm")
-                    </td>
-
-                    <td>@cita.Motivo</td>
-
-                    <td>
-                        @if (cita.Estado == "Programada")
-                        {
-                            <span class="badge bg-primary">
-                                Programada
-                            </span>
-                        }
-                        else if (cita.Estado == "Atendida")
-                        {
-                            <span class="badge bg-success">
-                                Atendida
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">
-                                @cita.Estado
-                            </span>
-                        }
-                    </td>
+                    <th>Paciente</th>
+                    <th>Médico</th>
+                    <th>Especialidad</th>
+                    <th>Fecha</th>
+                    <th>Motivo</th>
+                    <th>Estado de cita</th>
+                    <th>Costo (Q)</th>
+                    <th>Descuento (Q)</th>
+                    <th>Total (Q)</th>
+                    <th>Abonado (Q)</th>
+                    <th>Saldo (Q)</th>
+                    <th>Estado de pago</th>
                 </tr>
-            }
-        </tbody>
+            </thead>
 
-    </table>
+            <tbody>
+                @foreach (var cita in Model)
+                {
+                    var paciente = pacientes.FirstOrDefault(
+                        p => p.Id == cita.PacienteId);
+
+                    var medico = medicos.FirstOrDefault(
+                        m => m.Id == cita.MedicoId);
+
+                    // Calcular el total de la consulta
+                    decimal total = cita.CostoConsulta - cita.Descuento;
+
+                    // Calcular el saldo pendiente
+                    decimal saldo = total - cita.MontoPagado;
+
+                    <tr>
+                        <!-- PACIENTE -->
+                        <td>
+                            @(paciente != null
+                                ? paciente.Nombre + " " + paciente.Apellido
+                                : "No encontrado")
+                        </td>
+
+                        <!-- MÉDICO -->
+                        <td>
+                            @(medico != null
+                                ? medico.Nombre + " " + medico.Apellido
+                                : "No asignado")
+                        </td>
+
+                        <!-- ESPECIALIDAD -->
+                        <td>
+                            @(medico != null
+                                ? medico.Especialidad
+                                : "Sin especialidad")
+                        </td>
+
+                        <!-- FECHA -->
+                        <td>
+                            @cita.Fecha.ToString("dd/MM/yyyy HH:mm")
+                        </td>
+
+                        <!-- MOTIVO -->
+                        <td>@cita.Motivo</td>
+
+                        <!-- ESTADO DE LA CITA -->
+                        <td>
+                            @if (cita.Estado == "Programada")
+                            {
+                                <span class="badge bg-primary">
+                                    Programada
+                                </span>
+                            }
+                            else if (cita.Estado == "Atendida")
+                            {
+                                <span class="badge bg-success">
+                                    Atendida
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    @cita.Estado
+                                </span>
+                            }
+                        </td>
+
+                        <!-- COSTO -->
+                        <td>
+                            @cita.CostoConsulta.ToString("N2")
+                        </td>
+
+                        <!-- DESCUENTO -->
+                        <td>
+                            @cita.Descuento.ToString("N2")
+                        </td>
+
+                        <!-- TOTAL -->
+                        <td>
+                            <strong>
+                                @total.ToString("N2")
+                            </strong>
+                        </td>
+
+                        <!-- MONTO ABONADO -->
+                        <td>
+                            @cita.MontoPagado.ToString("N2")
+                        </td>
+
+                        <!-- SALDO PENDIENTE -->
+                        <td>
+                            @if (saldo > 0)
+                            {
+                                <span class="text-danger fw-bold">
+                                    @saldo.ToString("N2")
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-success fw-bold">
+                                    0.00
+                                </span>
+                            }
+                        </td>
+
+                        <!-- ESTADO DEL PAGO -->
+                        <td>
+                            @if (total == 0 && cita.MontoPagado == 0)
+                            {
+                                <span class="badge bg-secondary">
+                                    Sin cobro
+                                </span>
+                            }
+                            else if (cita.EstadoPago == "Pagado")
+                            {
+                                <span class="badge bg-success">
+                                    Pagado
+                                </span>
+                            }
+                            else if (cita.EstadoPago == "Parcial")
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    Parcial
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    Pendiente
+                                </span>
+                            }
+                        </td>
+
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+    </div>
 
     @if (Model.Count == 0)
     {
@@ -110,7 +199,7 @@
 
     <a asp-controller="Home"
        asp-action="Index"
-       class="btn btn-secondary">
+       class="btn btn-secondary mt-3">
         Volver al inicio
     </a>
 
