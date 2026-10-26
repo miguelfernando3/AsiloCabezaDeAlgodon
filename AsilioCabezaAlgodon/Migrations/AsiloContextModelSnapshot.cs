@@ -303,6 +303,47 @@ namespace AsilioCabezaAlgodon.Migrations
                     b.ToTable("Pagos");
                 });
 
+            modelBuilder.Entity("AsilioCabezaAlgodon.Entidades.SolicitudMedica", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CitaMedicaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EnfermeroAcompanante")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("EspecialidadSolicitada")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("FechaSolicitud")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Motivo")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("PacienteId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SolicitudesMedicas");
+                });
+
             modelBuilder.Entity("AsilioCabezaAlgodon.Entidades.Usuario", b =>
                 {
                     b.Property<int>("Id")

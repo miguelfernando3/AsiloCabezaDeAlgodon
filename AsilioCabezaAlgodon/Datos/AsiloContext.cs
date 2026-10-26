@@ -1,3 +1,4 @@
+
 using Microsoft.EntityFrameworkCore;
 using AsilioCabezaAlgodon.Entidades;
 
@@ -21,5 +22,8 @@ namespace AsilioCabezaAlgodon.Datos
         public DbSet<Pago> Pagos { get; set; }
         public DbSet<Donacion> Donaciones { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
+
+        // Solicitudes de atención médica a especialistas
+        public DbSet<SolicitudMedica> SolicitudesMedicas { get; set; }
     }
 }

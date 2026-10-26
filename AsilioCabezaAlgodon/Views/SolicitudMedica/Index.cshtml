@@ -1,0 +1,148 @@
+
+@model IEnumerable<AsilioCabezaAlgodon.Entidades.SolicitudMedica>
+
+@{
+    ViewData["Title"] = "Solicitudes médicas";
+
+    var pacientes = ViewBag.Pacientes
+        as List<AsilioCabezaAlgodon.Entidades.Paciente>;
+}
+
+<h2>Solicitudes médicas</h2>
+
+<p>
+    Consulte las solicitudes de atención especializada
+    realizadas para los pacientes del asilo.
+</p>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Mensaje"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
+@if (User.IsInRole("Administrador") || User.IsInRole("Medico"))
+{
+    <a asp-controller="SolicitudMedica"
+       asp-action="Create"
+       class="btn btn-primary mb-3">
+        Nueva solicitud médica
+    </a>
+}
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Paciente</th>
+                <th>Fecha</th>
+                <th>Motivo</th>
+                <th>Especialidad</th>
+                <th>Enfermero acompañante</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var solicitud in Model)
+            {
+                var paciente = pacientes?
+                    .FirstOrDefault(p => p.Id == solicitud.PacienteId);
+
+                <tr>
+                    <td>@solicitud.Id</td>
+
+                    <td>
+                        @if (paciente != null)
+                        {
+                            @($"{paciente.Nombre} {paciente.Apellido}")
+                        }
+                        else
+                        {
+                            <span>Paciente no encontrado</span>
+                        }
+                    </td>
+
+                    <td>
+                        @solicitud.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")
+                    </td>
+
+                    <td>@solicitud.Motivo</td>
+
+                    <td>@solicitud.EspecialidadSolicitada</td>
+
+                    <td>@solicitud.EnfermeroAcompanante</td>
+
+                    <td>
+                        @if (solicitud.Estado == "Pendiente")
+                        {
+                            <span class="badge bg-warning text-dark">
+                                Pendiente
+                            </span>
+                        }
+                        else if (solicitud.Estado == "Programada")
+                        {
+                            <span class="badge bg-success">
+                                Programada
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+                                @solicitud.Estado
+                            </span>
+                        }
+                    </td>
+
+                    <td>
+                        @if (solicitud.Estado == "Pendiente" &&
+                             solicitud.CitaMedicaId == null &&
+                             (User.IsInRole("Administrador") ||
+                              User.IsInRole("Fundacion")))
+                        {
+                            <a asp-controller="SolicitudMedica"
+                               asp-action="Programar"
+                               asp-route-id="@solicitud.Id"
+                               class="btn btn-success btn-sm">
+                                Programar cita
+                            </a>
+                        }
+                        else if (solicitud.CitaMedicaId != null)
+                        {
+                            <span class="text-success">
+                                Cita No. @solicitud.CitaMedicaId
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin acciones</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Todavía no hay solicitudes médicas registradas.
+    </div>
+}
+
+<a asp-controller="Home"
+   asp-action="Index"
+   class="btn btn-secondary">
+    Volver al inicio
+</a>
