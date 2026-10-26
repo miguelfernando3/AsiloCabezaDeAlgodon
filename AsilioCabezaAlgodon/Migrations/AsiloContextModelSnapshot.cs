@@ -164,6 +164,9 @@ namespace AsilioCabezaAlgodon.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("PacienteId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Parentesco")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -175,6 +178,63 @@ namespace AsilioCabezaAlgodon.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Familiares");
+                });
+
+            modelBuilder.Entity("AsilioCabezaAlgodon.Entidades.HistorialMedico", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Alergias")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("AntecedentesMedicos")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("EnfermedadesCronicas")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MedicamentosHabituales")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("MotivoIngreso")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Observaciones")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("PacienteId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Psicopatologias")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PacienteId")
+                        .IsUnique();
+
+                    b.ToTable("HistorialesMedicos");
                 });
 
             modelBuilder.Entity("AsilioCabezaAlgodon.Entidades.Medicamento", b =>
@@ -402,6 +462,15 @@ namespace AsilioCabezaAlgodon.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("VisitasMedicas");
+                });
+
+            modelBuilder.Entity("AsilioCabezaAlgodon.Entidades.HistorialMedico", b =>
+                {
+                    b.HasOne("AsilioCabezaAlgodon.Entidades.Paciente", null)
+                        .WithMany()
+                        .HasForeignKey("PacienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

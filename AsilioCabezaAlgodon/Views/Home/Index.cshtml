@@ -28,6 +28,14 @@
 
     bool verLaboratorio = administrador || medico ||
                           laboratorio;
+
+    bool verFamiliares = administrador || recepcionista ||
+                         medico || enfermero;
+
+    bool verSolicitudes = administrador || recepcionista ||
+                          medico || enfermero;
+
+    bool verReportes = administrador;
 }
 
 <div class="text-center">
@@ -204,6 +212,81 @@
                        asp-action="Index"
                        class="btn btn-primary">
                         Administrar usuarios
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- FAMILIARES -->
+    @if (verFamiliares)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">
+                        Familiares de Pacientes
+                    </h5>
+
+                    <p class="card-text">
+                        Registrar y consultar los familiares
+                        de los pacientes del asilo.
+                    </p>
+
+                    <a asp-controller="Familiar"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Ver familiares
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- SOLICITUDES MEDICAS -->
+    @if (verSolicitudes)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">
+                        Solicitudes Médicas
+                    </h5>
+
+                    <p class="card-text">
+                        Consultar solicitudes y programar
+                        citas con especialistas.
+                    </p>
+
+                    <a asp-controller="SolicitudMedica"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Ver solicitudes
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- REPORTES DEL ASILO -->
+    @if (verReportes)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">
+                        Reportes del Asilo
+                    </h5>
+
+                    <p class="card-text">
+                        Consultar el resumen de pacientes,
+                        citas, visitas, pagos y donaciones.
+                    </p>
+
+                    <a asp-controller="Reporte"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Ver reportes
                     </a>
                 </div>
             </div>

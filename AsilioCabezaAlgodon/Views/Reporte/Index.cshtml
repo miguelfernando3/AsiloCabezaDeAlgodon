@@ -1,0 +1,74 @@
+
+@{
+    ViewData["Title"] = "Reportes del Asilo";
+}
+
+<h1>Reportes del Asilo</h1>
+
+<p class="lead">
+    Resumen general de la información registrada en el sistema.
+</p>
+
+<div class="row">
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Pacientes registrados</h5>
+                <h2>@ViewBag.TotalPacientes</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Citas médicas</h5>
+                <h2>@ViewBag.TotalCitas</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Visitas médicas</h5>
+                <h2>@ViewBag.TotalVisitas</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Familiares registrados</h5>
+                <h2>@ViewBag.TotalFamiliares</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Total de pagos</h5>
+                <h2>Q @ViewBag.TotalPagos.ToString("N2")</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Total de donaciones</h5>
+                <h2>Q @ViewBag.TotalDonaciones.ToString("N2")</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<a asp-controller="Home"
+   asp-action="Index"
+   class="btn btn-secondary">
+    Volver al inicio
+</a>

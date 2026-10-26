@@ -1,0 +1,88 @@
+
+@model List<AsilioCabezaAlgodon.Entidades.Familiar>
+
+@using AsilioCabezaAlgodon.Entidades
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Familiares";
+
+    var pacientes = ViewBag.Pacientes as List<Paciente>
+        ?? new List<Paciente>();
+}
+
+<h2>Familiares registrados</h2>
+
+<p>
+    Información de los familiares de los pacientes del asilo.
+</p>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Mensaje"]
+    </div>
+}
+
+@if (User.IsInRole("Administrador") ||
+     User.IsInRole("Recepcionista"))
+{
+    <a asp-controller="Familiar"
+       asp-action="Create"
+       class="btn btn-primary mb-3">
+        Registrar familiar
+    </a>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">
+        Todavía no hay familiares registrados.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Paciente</th>
+                <th>Nombre del familiar</th>
+                <th>Parentesco</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var familiar in Model)
+            {
+                var paciente = pacientes.FirstOrDefault(
+                    p => p.Id == familiar.PacienteId);
+
+                <tr>
+                    <td>
+                        @(paciente == null
+                            ? "Sin paciente asignado"
+                            : paciente.Nombre + " " + paciente.Apellido)
+                    </td>
+
+                    <td>
+                        @familiar.Nombre @familiar.Apellido
+                    </td>
+
+                    <td>@familiar.Parentesco</td>
+
+                    <td>@familiar.Telefono</td>
+
+                    <td>@familiar.Correo</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<a asp-controller="Paciente"
+   asp-action="Index"
+   class="btn btn-secondary">
+    Volver a pacientes
+</a>

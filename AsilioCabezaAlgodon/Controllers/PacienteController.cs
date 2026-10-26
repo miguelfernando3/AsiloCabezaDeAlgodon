@@ -108,6 +108,17 @@ namespace AsilioCabezaAlgodon.Controllers
                     idsVisitas.Contains(m.VisitaMedicaId.Value))
                 .ToListAsync();
 
+            // Buscar el historial médico general
+            var historialMedico = await _context.HistorialesMedicos
+                .FirstOrDefaultAsync(h => h.PacienteId == id);
+
+            // NUEVO: Buscar familiares del paciente
+            var familiares = await _context.Familiares
+                .Where(f => f.PacienteId == id)
+                .OrderBy(f => f.Apellido)
+                .ThenBy(f => f.Nombre)
+                .ToListAsync();
+
             // Enviar información a la vista
             ViewBag.Citas = citas;
             ViewBag.Visitas = visitas;
@@ -115,6 +126,10 @@ namespace AsilioCabezaAlgodon.Controllers
             ViewBag.Medicos = medicos;
             ViewBag.Examenes = examenes;
             ViewBag.Medicamentos = medicamentos;
+            ViewBag.HistorialMedico = historialMedico;
+
+            // NUEVO: Enviar familiares a la vista
+            ViewBag.Familiares = familiares;
 
             return View(paciente);
         }

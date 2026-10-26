@@ -1,0 +1,109 @@
+
+@model AsilioCabezaAlgodon.Entidades.Familiar
+
+@{
+    ViewData["Title"] = "Registrar Familiar";
+}
+
+<h2>Registrar Familiar</h2>
+
+<p>Ingrese los datos del familiar del paciente.</p>
+
+<form asp-controller="Familiar"
+      asp-action="Create"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly"
+         class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="PacienteId" class="form-label">
+            Paciente
+        </label>
+
+        <select asp-for="PacienteId"
+                asp-items="ViewBag.Pacientes"
+                class="form-select">
+            <option value="">Seleccione un paciente</option>
+        </select>
+
+        <span asp-validation-for="PacienteId"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Nombre" class="form-label">
+            Nombre
+        </label>
+
+        <input asp-for="Nombre" class="form-control" />
+
+        <span asp-validation-for="Nombre"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Apellido" class="form-label">
+            Apellido
+        </label>
+
+        <input asp-for="Apellido" class="form-control" />
+
+        <span asp-validation-for="Apellido"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Parentesco" class="form-label">
+            Parentesco
+        </label>
+
+        <input asp-for="Parentesco"
+               class="form-control"
+               placeholder="Ejemplo: Hija, hijo, hermano" />
+
+        <span asp-validation-for="Parentesco"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Telefono" class="form-label">
+            Teléfono
+        </label>
+
+        <input asp-for="Telefono" class="form-control" />
+
+        <span asp-validation-for="Telefono"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Correo" class="form-label">
+            Correo electrónico
+        </label>
+
+        <input asp-for="Correo"
+               type="email"
+               class="form-control" />
+
+        <span asp-validation-for="Correo"
+              class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Guardar familiar
+    </button>
+
+    <a asp-controller="Paciente"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Cancelar
+    </a>
+
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

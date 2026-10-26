@@ -1,0 +1,118 @@
+
+@model AsilioCabezaAlgodon.Entidades.HistorialMedico
+
+@{
+    ViewData["Title"] = "Historial Médico";
+}
+
+<h2>Historial Médico</h2>
+
+<p>
+    Paciente: <strong>@ViewBag.NombrePaciente</strong>
+</p>
+
+<form asp-controller="HistorialMedico"
+      asp-action="Editar"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="PacienteId" />
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly"
+         class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="MotivoIngreso" class="form-label">
+            Motivo de ingreso al asilo
+        </label>
+        <textarea asp-for="MotivoIngreso"
+                  class="form-control"
+                  rows="2"></textarea>
+        <span asp-validation-for="MotivoIngreso"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="AntecedentesMedicos" class="form-label">
+            Antecedentes médicos
+        </label>
+        <textarea asp-for="AntecedentesMedicos"
+                  class="form-control"
+                  rows="3"></textarea>
+        <span asp-validation-for="AntecedentesMedicos"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="EnfermedadesCronicas" class="form-label">
+            Enfermedades crónicas
+        </label>
+        <textarea asp-for="EnfermedadesCronicas"
+                  class="form-control"
+                  rows="2"></textarea>
+        <span asp-validation-for="EnfermedadesCronicas"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Alergias" class="form-label">
+            Alergias
+        </label>
+        <textarea asp-for="Alergias"
+                  class="form-control"
+                  rows="2"></textarea>
+        <span asp-validation-for="Alergias"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Psicopatologias" class="form-label">
+            Psicopatologías
+        </label>
+        <textarea asp-for="Psicopatologias"
+                  class="form-control"
+                  rows="2"></textarea>
+        <span asp-validation-for="Psicopatologias"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="MedicamentosHabituales" class="form-label">
+            Medicamentos habituales
+        </label>
+        <textarea asp-for="MedicamentosHabituales"
+                  class="form-control"
+                  rows="3"></textarea>
+        <span asp-validation-for="MedicamentosHabituales"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Observaciones" class="form-label">
+            Observaciones generales
+        </label>
+        <textarea asp-for="Observaciones"
+                  class="form-control"
+                  rows="3"></textarea>
+        <span asp-validation-for="Observaciones"
+              class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Guardar historial médico
+    </button>
+
+    <a asp-controller="Paciente"
+       asp-action="Historial"
+       asp-route-id="@Model.PacienteId"
+       class="btn btn-secondary">
+        Cancelar
+    </a>
+
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

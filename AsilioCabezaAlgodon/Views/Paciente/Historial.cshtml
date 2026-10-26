@@ -54,6 +54,82 @@
     </div>
 </div>
 
+
+@{
+    var historialMedico = ViewBag.HistorialMedico as HistorialMedico;
+}
+
+<h3 class="mt-4">Antecedentes médicos del paciente</h3>
+
+@if (User.IsInRole("Administrador") ||
+     User.IsInRole("Medico") ||
+     User.IsInRole("Enfermero"))
+{
+    <a asp-controller="HistorialMedico"
+       asp-action="Editar"
+       asp-route-pacienteId="@Model.Id"
+       class="btn btn-primary mb-3">
+        @(historialMedico == null
+            ? "Registrar historial médico"
+            : "Editar historial médico")
+    </a>
+}
+
+@if (historialMedico == null)
+{
+    <div class="alert alert-info">
+        Este paciente todavía no tiene antecedentes médicos registrados.
+    </div>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-body">
+
+            <p>
+                <strong>Motivo de ingreso:</strong>
+                @historialMedico.MotivoIngreso
+            </p>
+
+            <p>
+                <strong>Antecedentes médicos:</strong>
+                @historialMedico.AntecedentesMedicos
+            </p>
+
+            <p>
+                <strong>Enfermedades crónicas:</strong>
+                @historialMedico.EnfermedadesCronicas
+            </p>
+
+            <p>
+                <strong>Alergias:</strong>
+                @historialMedico.Alergias
+            </p>
+
+            <p>
+                <strong>Psicopatologías:</strong>
+                @historialMedico.Psicopatologias
+            </p>
+
+            <p>
+                <strong>Medicamentos habituales:</strong>
+                @historialMedico.MedicamentosHabituales
+            </p>
+
+            <p>
+                <strong>Observaciones generales:</strong>
+                @historialMedico.Observaciones
+            </p>
+
+            <p>
+                <strong>Fecha de registro:</strong>
+                @historialMedico.FechaRegistro.ToString("dd/MM/yyyy")
+            </p>
+
+        </div>
+    </div>
+}
+
 <h3>Consultas y diagnósticos</h3>
 
 @if (visitas.Count == 0)
@@ -194,3 +270,48 @@ else
         </tbody>
     </table>
 }
+
+@{
+    var familiares = ViewBag.Familiares as List<Familiar>
+        ?? new List<Familiar>();
+}
+
+<h3 class="mt-4">Familiares del paciente</h3>
+
+@if (familiares.Count == 0)
+{
+    <div class="alert alert-info">
+        Este paciente todavía no tiene familiares registrados.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nombre completo</th>
+                <th>Parentesco</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var familiar in familiares)
+            {
+                <tr>
+                    <td>@familiar.Nombre @familiar.Apellido</td>
+                    <td>@familiar.Parentesco</td>
+                    <td>@familiar.Telefono</td>
+                    <td>@familiar.Correo</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<a asp-controller="Familiar"
+   asp-action="Create"
+   asp-route-pacienteId="@Model.Id"
+   class="btn btn-primary mt-2">
+    Registrar familiar
+</a>
