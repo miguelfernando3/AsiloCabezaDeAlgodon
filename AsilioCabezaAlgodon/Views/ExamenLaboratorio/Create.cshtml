@@ -56,6 +56,22 @@
     </div>
 
     <div class="mb-3">
+        <label asp-for="Costo" class="form-label">
+            Costo del examen (Q)
+        </label>
+
+        <input asp-for="Costo"
+               type="number"
+               step="0.01"
+               min="0"
+               class="form-control"
+               required />
+
+        <span asp-validation-for="Costo"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
         <label class="form-label">Fecha del examen</label>
 
         <input asp-for="Fecha"
@@ -79,3 +95,7 @@
     </a>
 
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

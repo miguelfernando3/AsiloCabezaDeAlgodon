@@ -26,6 +26,7 @@
             <th>Nombre del examen</th>
             <th>Resultado</th>
             <th>Fecha</th>
+            <th>Costo (Q)</th>
         </tr>
     </thead>
 
@@ -47,9 +48,16 @@
                         ? "No disponible"
                         : paciente.Nombre + " " + paciente.Apellido)
                 </td>
+
                 <td>@examen.NombreExamen</td>
+
                 <td>@examen.Resultado</td>
+
                 <td>@examen.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+
+                <td>
+                    Q @examen.Costo.ToString("N2")
+                </td>
             </tr>
         }
     </tbody>

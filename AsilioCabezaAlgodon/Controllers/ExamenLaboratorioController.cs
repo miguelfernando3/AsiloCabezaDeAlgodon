@@ -45,7 +45,8 @@ namespace AsilioCabezaAlgodon.Controllers
 
             return View(new ExamenLaboratorio
             {
-                Fecha = DateTime.Now
+                Fecha = DateTime.Now,
+                Costo = 0
             });
         }
 
@@ -84,6 +85,14 @@ namespace AsilioCabezaAlgodon.Controllers
                     "Selecciona una fecha válida.");
             }
 
+            // Validar el costo del examen
+            if (examen.Costo < 0)
+            {
+                ModelState.AddModelError(
+                    "Costo",
+                    "El costo del examen no puede ser negativo.");
+            }
+
             if (!ModelState.IsValid)
             {
                 await CargarVisitas();
@@ -92,6 +101,9 @@ namespace AsilioCabezaAlgodon.Controllers
 
             _context.ExamenesLaboratorio.Add(examen);
             await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] =
+                "Examen de laboratorio registrado correctamente.";
 
             return RedirectToAction("Index");
         }

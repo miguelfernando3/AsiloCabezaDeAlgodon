@@ -1,0 +1,135 @@
+
+@model List<AsilioCabezaAlgodon.Entidades.Pago>
+
+@{
+    ViewData["Title"] = "Reporte de Cobros";
+
+    DateTime fechaInicio = ViewBag.FechaInicio;
+    DateTime fechaFin = ViewBag.FechaFin;
+
+    var nombresPacientes =
+        ViewBag.NombresPacientes as Dictionary<int, string>
+        ?? new Dictionary<int, string>();
+
+    decimal totalCobrado = ViewBag.TotalCobrado;
+    int cantidadPagos = ViewBag.CantidadPagos;
+}
+
+<h2>Reporte de Cobros</h2>
+
+<p>
+    Consulte los pagos registrados en el asilo
+    durante un período determinado.
+</p>
+
+<form asp-controller="Reporte"
+      asp-action="Cobros"
+      method="get">
+
+    <div class="row">
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">
+                Fecha inicial
+            </label>
+
+            <input type="date"
+                   name="fechaInicio"
+                   value="@fechaInicio.ToString("yyyy-MM-dd")"
+                   class="form-control"
+                   required />
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">
+                Fecha final
+            </label>
+
+            <input type="date"
+                   name="fechaFin"
+                   value="@fechaFin.ToString("yyyy-MM-dd")"
+                   class="form-control"
+                   required />
+        </div>
+
+        <div class="col-md-4 mb-3 d-flex align-items-end">
+            <button type="submit"
+                    class="btn btn-primary">
+                Consultar cobros
+            </button>
+        </div>
+
+    </div>
+
+</form>
+
+<div asp-validation-summary="All"
+     class="text-danger"></div>
+
+<hr />
+
+<h4>Resultados del período</h4>
+
+<p>
+    <strong>Desde:</strong>
+    @fechaInicio.ToString("dd/MM/yyyy")
+
+    <strong>Hasta:</strong>
+    @fechaFin.ToString("dd/MM/yyyy")
+</p>
+
+<p>
+    <strong>Cantidad de pagos:</strong>
+    @cantidadPagos
+</p>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Paciente</th>
+            <th>Concepto</th>
+            <th>Monto</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var pago in Model)
+        {
+            string nombrePaciente = nombresPacientes.ContainsKey(pago.PacienteId)
+                ? nombresPacientes[pago.PacienteId]
+                : "Paciente no disponible";
+
+            <tr>
+                <td>@pago.Fecha.ToString("dd/MM/yyyy")</td>
+                <td>@nombrePaciente</td>
+                <td>@pago.Concepto</td>
+                <td>Q @pago.Monto.ToString("N2")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (Model.Count == 0 && ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-info">
+        No se encontraron pagos en este período.
+    </div>
+}
+
+<hr />
+
+<h3>
+    Total cobrado: Q @totalCobrado.ToString("N2")
+</h3>
+
+<p class="text-muted">
+    Este reporte incluye únicamente los pagos registrados.
+    No incluye donaciones ni saldos pendientes.
+</p>
+
+<a asp-controller="Reporte"
+   asp-action="Index"
+   class="btn btn-secondary">
+    Volver a reportes
+</a>

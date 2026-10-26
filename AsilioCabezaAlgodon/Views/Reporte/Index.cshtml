@@ -1,6 +1,11 @@
 
+@using Microsoft.AspNetCore.Mvc.Rendering
+
 @{
     ViewData["Title"] = "Reportes del Asilo";
+
+    var listaPacientes =
+        ViewBag.ListaPacientes as SelectList;
 }
 
 <h1>Reportes del Asilo</h1>
@@ -66,6 +71,60 @@
     </div>
 
 </div>
+
+<hr />
+
+<h3>Gastos médicos por paciente</h3>
+
+<p>
+    Seleccione un paciente para consultar los costos
+    de sus consultas médicas, exámenes de laboratorio
+    y medicamentos.
+</p>
+
+<form asp-controller="Reporte"
+      asp-action="GastosPaciente"
+      method="get">
+
+    <div class="mb-3">
+        <label for="pacienteId" class="form-label">
+            Seleccionar paciente
+        </label>
+
+        <select id="pacienteId"
+                name="pacienteId"
+                asp-items="listaPacientes"
+                class="form-select"
+                required>
+            <option value="">
+                Seleccione un paciente
+            </option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Ver gastos médicos
+    </button>
+
+</form>
+
+<hr />
+
+
+<h3>Reporte de cobros por fechas</h3>
+
+<p>
+    Consulte los pagos recibidos por el asilo
+    durante un período determinado.
+</p>
+
+<a asp-controller="Reporte"
+   asp-action="Cobros"
+   class="btn btn-primary mb-3">
+    Ver reporte de cobros
+</a>
+
+<hr />
 
 <a asp-controller="Home"
    asp-action="Index"

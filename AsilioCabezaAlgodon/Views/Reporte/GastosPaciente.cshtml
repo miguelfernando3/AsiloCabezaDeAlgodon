@@ -1,0 +1,138 @@
+
+@using AsilioCabezaAlgodon.Entidades
+
+@{
+    ViewData["Title"] = "Gastos Médicos por Paciente";
+
+    var paciente = ViewBag.Paciente as Paciente;
+
+    var citas = ViewBag.Citas as List<CitaMedica>
+        ?? new List<CitaMedica>();
+
+    var examenes = ViewBag.Examenes as List<ExamenLaboratorio>
+        ?? new List<ExamenLaboratorio>();
+
+    var medicamentos = ViewBag.Medicamentos as List<Medicamento>
+        ?? new List<Medicamento>();
+
+    decimal totalConsultas = ViewBag.TotalConsultas;
+    decimal totalLaboratorio = ViewBag.TotalLaboratorio;
+    decimal totalMedicamentos = ViewBag.TotalMedicamentos;
+    decimal totalGeneral = ViewBag.TotalGeneral;
+}
+
+<h2>Reporte de Gastos Médicos</h2>
+
+<h4>
+    Paciente: @paciente?.Nombre @paciente?.Apellido
+</h4>
+
+<hr />
+
+<h5>Consultas médicas</h5>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Motivo</th>
+            <th>Costo</th>
+            <th>Descuento</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var cita in citas)
+        {
+            var total = Math.Max(0m,
+                cita.CostoConsulta - cita.Descuento);
+
+            <tr>
+                <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
+                <td>@cita.Motivo</td>
+                <td>Q @cita.CostoConsulta.ToString("N2")</td>
+                <td>Q @cita.Descuento.ToString("N2")</td>
+                <td>Q @total.ToString("N2")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>
+    <strong>Total consultas:</strong>
+    Q @totalConsultas.ToString("N2")
+</p>
+
+<hr />
+
+<h5>Exámenes de laboratorio</h5>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Examen</th>
+            <th>Costo</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var examen in examenes)
+        {
+            <tr>
+                <td>@examen.Fecha.ToString("dd/MM/yyyy")</td>
+                <td>@examen.NombreExamen</td>
+                <td>Q @examen.Costo.ToString("N2")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>
+    <strong>Total laboratorio:</strong>
+    Q @totalLaboratorio.ToString("N2")
+</p>
+
+<hr />
+
+<h5>Medicamentos</h5>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Medicamento</th>
+            <th>Costo</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var medicamento in medicamentos)
+        {
+            <tr>
+                <td>@medicamento.Nombre</td>
+                <td>Q @medicamento.Costo.ToString("N2")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>
+    <strong>Total medicamentos:</strong>
+    Q @totalMedicamentos.ToString("N2")
+</p>
+
+<hr />
+
+<h4>
+    Total general de gastos:
+    Q @totalGeneral.ToString("N2")
+</h4>
+
+<p class="text-muted">
+    Este reporte muestra los costos médicos registrados.
+    No representa necesariamente el dinero pagado.
+</p>
+
+<a asp-controller="Reporte"
+   asp-action="Index"
+   class="btn btn-secondary">
+    Volver a reportes
+</a>
