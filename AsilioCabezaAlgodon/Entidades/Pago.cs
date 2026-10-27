@@ -12,7 +12,7 @@ namespace AsilioCabezaAlgodon.Entidades
             ErrorMessage = "Seleccione un paciente.")]
         public int PacienteId { get; set; }
 
-        // Opcional: relacionar el pago con una cita médica
+        // Opcional: pago relacionado con una cita médica
         public int? CitaMedicaId { get; set; }
 
         [Range(typeof(decimal), "0.01", "999999999.99",
@@ -25,5 +25,16 @@ namespace AsilioCabezaAlgodon.Entidades
         [Required(ErrorMessage = "Ingrese el concepto del pago.")]
         [StringLength(200)]
         public string Concepto { get; set; } = "";
+
+        // Identifica si el pago es una mensualidad
+        public bool EsMensualidad { get; set; } = false;
+
+        // Mes correspondiente a la mensualidad
+        [Range(1, 12, ErrorMessage = "Seleccione un mes válido.")]
+        public int? Mes { get; set; }
+
+        // Año correspondiente a la mensualidad
+        [Range(2020, 2100, ErrorMessage = "Ingrese un año válido.")]
+        public int? Anio { get; set; }
     }
 }

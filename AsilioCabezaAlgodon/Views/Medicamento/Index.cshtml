@@ -18,71 +18,161 @@
 
 <div class="container mt-4">
 
-    <h2>Medicamentos Registrados</h2>
+    <h2>Medicamentos</h2>
 
-    <p>Listado de medicamentos, pacientes y sus costos.</p>
+    <p>
+        Consulte las recetas médicas y los medicamentos
+        despachados por farmacia.
+    </p>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Mensaje"]
+        </div>
+    }
+
+    @if (TempData["Aviso"] != null)
+    {
+        <div class="alert alert-warning">
+            @TempData["Aviso"]
+        </div>
+    }
 
     @if (User.IsInRole("Administrador") ||
-         User.IsInRole("Medico") ||
-         User.IsInRole("Farmacia"))
+         User.IsInRole("Medico"))
     {
         <a asp-controller="Medicamento"
            asp-action="Create"
            class="btn btn-primary mb-3">
-            Registrar Medicamento
+            Recetar medicamento
         </a>
     }
 
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Paciente</th>
-                <th>Nombre</th>
-                <th>Dosis</th>
-                <th>Duración</th>
-                <th>Costo (Q)</th>
-            </tr>
-        </thead>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Paciente</th>
+                    <th>Medicamento</th>
+                    <th>Dosis</th>
+                    <th>Duración</th>
+                    <th>Estado</th>
+                    <th>Costo (Q)</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
 
-        <tbody>
-            @foreach (var medicamento in Model)
-            {
-                string nombrePaciente = "Sin paciente asignado";
-
-                if (medicamento.VisitaMedicaId.HasValue)
+            <tbody>
+                @foreach (var medicamento in Model)
                 {
-                    var visita = visitas.FirstOrDefault(v =>
-                        v.Id == medicamento.VisitaMedicaId.Value);
+                    string nombrePaciente = "Sin paciente asignado";
 
-                    if (visita != null)
+                    if (medicamento.VisitaMedicaId.HasValue)
                     {
-                        var cita = citas.FirstOrDefault(c =>
-                            c.Id == visita.CitaMedicaId);
+                        var visita = visitas.FirstOrDefault(v =>
+                            v.Id == medicamento.VisitaMedicaId.Value);
 
-                        if (cita != null)
+                        if (visita != null)
                         {
-                            var paciente = pacientes.FirstOrDefault(p =>
-                                p.Id == cita.PacienteId);
+                            var cita = citas.FirstOrDefault(c =>
+                                c.Id == visita.CitaMedicaId);
 
-                            if (paciente != null)
+                            if (cita != null)
                             {
-                                nombrePaciente =
-                                    paciente.Nombre + " " + paciente.Apellido;
+                                var paciente = pacientes.FirstOrDefault(p =>
+                                    p.Id == cita.PacienteId);
+
+                                if (paciente != null)
+                                {
+                                    nombrePaciente =
+                                        paciente.Nombre + " " +
+                                        paciente.Apellido;
+                                }
                             }
                         }
                     }
-                }
 
-                <tr>
-                    <td>@nombrePaciente</td>
-                    <td>@medicamento.Nombre</td>
-                    <td>@medicamento.Dosis</td>
-                    <td>@medicamento.Duracion</td>
-                    <td>Q @medicamento.Costo.ToString("N2")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    bool pendiente =
+                        medicamento.Estado == "Pendiente";
+
+                    <tr>
+                        <td>@nombrePaciente</td>
+
+                        <td>@medicamento.Nombre</td>
+
+                        <td>@medicamento.Dosis</td>
+
+                        <td>@medicamento.Duracion</td>
+
+                        <td>
+                            @if (pendiente)
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    Pendiente
+                                </span>
+                            }
+                            else if (medicamento.Estado == "Despachado")
+                            {
+                                <span class="badge bg-success">
+                                    Despachado
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    @medicamento.Estado
+                                </span>
+                            }
+                        </td>
+
+                        <td>
+                            Q @medicamento.Costo.ToString("N2")
+                        </td>
+
+                        <td>
+                            @if (pendiente &&
+                                 medicamento.VisitaMedicaId.HasValue &&
+                                 (User.IsInRole("Administrador") ||
+                                  User.IsInRole("Farmacia")))
+                            {
+                                <form asp-controller="Medicamento"
+                                      asp-action="Despachar"
+                                      asp-route-id="@medicamento.Id"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-success btn-sm">
+                                        Despachar
+                                    </button>
+                                </form>
+                            }
+                            else if (medicamento.Estado == "Despachado")
+                            {
+                                <span class="text-success">
+                                    Completado
+                                </span>
+                            }
+                            else if (!medicamento.VisitaMedicaId.HasValue)
+                            {
+                                <span class="text-muted">
+                                    Sin visita médica
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">
+                                    Pendiente
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
     @if (Model.Count == 0)
     {

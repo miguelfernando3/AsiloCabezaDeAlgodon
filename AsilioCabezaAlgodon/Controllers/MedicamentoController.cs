@@ -18,73 +18,111 @@ namespace AsilioCabezaAlgodon.Controllers
             _context = context;
         }
 
-        // Mostrar medicamentos registrados
+        // Mostrar medicamentos recetados y despachados
         [HttpGet]
         public async Task<IActionResult> Index()
         {
             var medicamentos = await _context.Medicamentos
-                .OrderBy(m => m.Nombre)
+                .AsNoTracking()
+                .OrderBy(m => m.Estado == "Despachado")
+                .ThenBy(m => m.Nombre)
                 .ToListAsync();
 
-            // Obtener las visitas, citas y pacientes
-            // para identificar a quién pertenece cada medicamento
             ViewBag.Visitas = await _context.VisitasMedicas
+                .AsNoTracking()
                 .ToListAsync();
 
             ViewBag.Citas = await _context.CitasMedicas
+                .AsNoTracking()
                 .ToListAsync();
 
             ViewBag.Pacientes = await _context.Pacientes
+                .AsNoTracking()
                 .ToListAsync();
 
             return View(medicamentos);
         }
 
-        // Mostrar formulario para registrar medicamentos
+        // Mostrar formulario para recetar medicamento
         [HttpGet]
-        [Authorize(Roles = "Administrador,Medico,Farmacia")]
+        [Authorize(Roles = "Administrador,Medico")]
         public async Task<IActionResult> Create()
         {
             await CargarVisitas();
 
-            return View();
+            return View(new Medicamento
+            {
+                Estado = "Pendiente",
+                Costo = 0
+            });
         }
 
-        // Guardar medicamento
+        // Guardar receta médica
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Administrador,Medico,Farmacia")]
+        [Authorize(Roles = "Administrador,Medico")]
         public async Task<IActionResult> Create(Medicamento medicamento)
         {
+            medicamento.Id = 0;
+            medicamento.Estado = "Pendiente";
+
+            ModelState.Remove(nameof(Medicamento.Id));
+            ModelState.Remove(nameof(Medicamento.Estado));
+
             if (string.IsNullOrWhiteSpace(medicamento.Nombre))
             {
                 ModelState.AddModelError(
-                    "Nombre",
-                    "Ingresa el nombre del medicamento.");
+                    nameof(medicamento.Nombre),
+                    "Ingrese el nombre del medicamento.");
+            }
+            else if (medicamento.Nombre.Trim().Length > 200)
+            {
+                ModelState.AddModelError(
+                    nameof(medicamento.Nombre),
+                    "El nombre no puede superar 200 caracteres.");
             }
 
             if (string.IsNullOrWhiteSpace(medicamento.Dosis))
             {
                 ModelState.AddModelError(
-                    "Dosis",
-                    "Ingresa la dosis del medicamento.");
+                    nameof(medicamento.Dosis),
+                    "Ingrese la dosis del medicamento.");
+            }
+            else if (medicamento.Dosis.Trim().Length > 200)
+            {
+                ModelState.AddModelError(
+                    nameof(medicamento.Dosis),
+                    "La dosis no puede superar 200 caracteres.");
             }
 
             if (string.IsNullOrWhiteSpace(medicamento.Duracion))
             {
                 ModelState.AddModelError(
-                    "Duracion",
-                    "Ingresa la duración del tratamiento.");
+                    nameof(medicamento.Duracion),
+                    "Ingrese la duración del tratamiento.");
+            }
+            else if (medicamento.Duracion.Trim().Length > 200)
+            {
+                ModelState.AddModelError(
+                    nameof(medicamento.Duracion),
+                    "La duración no puede superar 200 caracteres.");
             }
 
             if (medicamento.Costo < 0)
             {
                 ModelState.AddModelError(
-                    "Costo",
+                    nameof(medicamento.Costo),
                     "El costo no puede ser negativo.");
             }
 
-            if (medicamento.VisitaMedicaId.HasValue)
+            if (!medicamento.VisitaMedicaId.HasValue ||
+                medicamento.VisitaMedicaId.Value <= 0)
+            {
+                ModelState.AddModelError(
+                    nameof(medicamento.VisitaMedicaId),
+                    "Seleccione una visita médica.");
+            }
+            else
             {
                 bool existeVisita = await _context.VisitasMedicas
                     .AnyAsync(v =>
@@ -93,29 +131,70 @@ namespace AsilioCabezaAlgodon.Controllers
                 if (!existeVisita)
                 {
                     ModelState.AddModelError(
-                        "VisitaMedicaId",
-                        "La visita médica no existe.");
+                        nameof(medicamento.VisitaMedicaId),
+                        "La visita médica seleccionada no existe.");
                 }
             }
 
             if (!ModelState.IsValid)
             {
                 await CargarVisitas();
-
                 return View(medicamento);
             }
 
-            _context.Medicamentos.Add(medicamento);
+            medicamento.Nombre = medicamento.Nombre.Trim();
+            medicamento.Dosis = medicamento.Dosis.Trim();
+            medicamento.Duracion = medicamento.Duracion.Trim();
 
+            _context.Medicamentos.Add(medicamento);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            TempData["Mensaje"] =
+                "Medicamento recetado correctamente. Pendiente de despacho.";
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // Cargar visitas médicas con el nombre del paciente
+        // Confirmar despacho de un medicamento
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Farmacia")]
+        public async Task<IActionResult> Despachar(int id)
+        {
+            if (id <= 0)
+                return BadRequest();
+
+            // Solo cambia de Pendiente a Despachado.
+            // Evita despachar dos veces el mismo medicamento.
+            int actualizados = await _context.Medicamentos
+                .Where(m => m.Id == id &&
+                            m.Estado == "Pendiente" &&
+                            m.VisitaMedicaId != null)
+                .ExecuteUpdateAsync(cambios => cambios
+                    .SetProperty(
+                        m => m.Estado,
+                        "Despachado"));
+
+            if (actualizados == 0)
+            {
+                TempData["Aviso"] =
+                    "No se pudo despachar el medicamento. " +
+                    "Verifique que esté pendiente y tenga una visita médica.";
+            }
+            else
+            {
+                TempData["Mensaje"] =
+                    "Medicamento despachado correctamente.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Cargar visitas médicas y pacientes
         private async Task CargarVisitas()
         {
             var datos = await _context.VisitasMedicas
+                .AsNoTracking()
                 .Join(
                     _context.CitasMedicas,
                     visita => visita.CitaMedicaId,
@@ -143,9 +222,9 @@ namespace AsilioCabezaAlgodon.Controllers
             var visitas = datos.Select(dato => new
             {
                 dato.Id,
-                Descripcion = dato.Nombre + " " +
-                              dato.Apellido + " - " +
-                              dato.Fecha.ToString("dd/MM/yyyy")
+                Descripcion =
+                    dato.Nombre + " " + dato.Apellido +
+                    " - " + dato.Fecha.ToString("dd/MM/yyyy")
             }).ToList();
 
             ViewBag.ListaVisitas = new SelectList(

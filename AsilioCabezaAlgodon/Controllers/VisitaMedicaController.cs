@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using AsilioCabezaAlgodon.Datos;
 using AsilioCabezaAlgodon.Entidades;
 using AsilioCabezaAlgodon.Models;
+using System.Data;
 
 namespace AsilioCabezaAlgodon.Controllers
 {
@@ -19,7 +20,7 @@ namespace AsilioCabezaAlgodon.Controllers
             _context = context;
         }
 
-        // Mostrar visitas médicas registradas
+        // Mostrar visitas médicas
         public async Task<IActionResult> Index()
         {
             var visitas = await _context.VisitasMedicas
@@ -34,13 +35,12 @@ namespace AsilioCabezaAlgodon.Controllers
             return View(visitas);
         }
 
-        // Mostrar formulario para registrar una visita
+        // Formulario para registrar visita
         [HttpGet]
         [Authorize(Roles = "Administrador,Medico")]
         public async Task<IActionResult> Create()
         {
             await CargarCitas();
-
             return View(new RegistrarVisitaViewModel());
         }
 
@@ -51,28 +51,19 @@ namespace AsilioCabezaAlgodon.Controllers
         public async Task<IActionResult> Create(
             RegistrarVisitaViewModel modelo)
         {
-            // Verificar que la cita exista
-            var cita = await _context.CitasMedicas
-                .FirstOrDefaultAsync(c => c.Id == modelo.CitaMedicaId);
-
-            if (cita == null)
+            // Validar fecha
+            if (modelo.Fecha > DateTime.Now)
             {
                 ModelState.AddModelError(
-                    "CitaMedicaId",
-                    "Selecciona una cita médica válida.");
+                    nameof(modelo.Fecha),
+                    "La fecha de la visita no puede ser futura.");
             }
-            else
-            {
-                // Evitar registrar dos visitas para la misma cita
-                bool existeVisita = await _context.VisitasMedicas
-                    .AnyAsync(v => v.CitaMedicaId == modelo.CitaMedicaId);
 
-                if (existeVisita)
-                {
-                    ModelState.AddModelError(
-                        "CitaMedicaId",
-                        "Esta cita ya tiene una visita registrada.");
-                }
+            if (modelo.Fecha == default)
+            {
+                ModelState.AddModelError(
+                    nameof(modelo.Fecha),
+                    "Ingrese una fecha válida.");
             }
 
             if (!ModelState.IsValid)
@@ -81,7 +72,48 @@ namespace AsilioCabezaAlgodon.Controllers
                 return View(modelo);
             }
 
-            // Crear la visita médica
+            // Transacción para evitar duplicaciones simultáneas
+            await using var transaccion =
+                await _context.Database.BeginTransactionAsync(
+                    IsolationLevel.Serializable);
+
+            var cita = await _context.CitasMedicas
+                .FirstOrDefaultAsync(c =>
+                    c.Id == modelo.CitaMedicaId);
+
+            if (cita == null)
+            {
+                ModelState.AddModelError(
+                    nameof(modelo.CitaMedicaId),
+                    "La cita médica no existe.");
+            }
+            else if (cita.Estado != "Programada")
+            {
+                ModelState.AddModelError(
+                    nameof(modelo.CitaMedicaId),
+                    "Esta cita ya no está programada.");
+            }
+            else
+            {
+                bool existeVisita = await _context.VisitasMedicas
+                    .AnyAsync(v =>
+                        v.CitaMedicaId == modelo.CitaMedicaId);
+
+                if (existeVisita)
+                {
+                    ModelState.AddModelError(
+                        nameof(modelo.CitaMedicaId),
+                        "Esta cita ya tiene una visita registrada.");
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await transaccion.RollbackAsync();
+                await CargarCitas();
+                return View(modelo);
+            }
+
             var visita = new VisitaMedica
             {
                 CitaMedicaId = modelo.CitaMedicaId,
@@ -90,10 +122,6 @@ namespace AsilioCabezaAlgodon.Controllers
                 Diagnostico = modelo.Diagnostico,
                 Observaciones = modelo.Observaciones
             };
-
-            // Guardar visita y diagnóstico en una transacción
-            await using var transaccion =
-                await _context.Database.BeginTransactionAsync();
 
             _context.VisitasMedicas.Add(visita);
             await _context.SaveChangesAsync();
@@ -106,17 +134,20 @@ namespace AsilioCabezaAlgodon.Controllers
             };
 
             _context.Diagnosticos.Add(diagnostico);
-            // Cambiar el estado de la cita a Atendida
-            cita!.Estado = "Atendida"; 
+
+            // Marcar cita como atendida
+            cita!.Estado = "Atendida";
+
             await _context.SaveChangesAsync();
-            
-            // Confirmar todos los cambios
             await transaccion.CommitAsync();
 
-            return RedirectToAction("Index");
+            TempData["Mensaje"] =
+                "La visita médica y el diagnóstico se guardaron correctamente.";
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // Cargar citas disponibles para registrar visitas
+        // Cargar citas programadas sin visitas registradas
         private async Task CargarCitas()
         {
             var citas = await _context.CitasMedicas

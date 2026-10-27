@@ -121,6 +121,42 @@
                     el módulo de pagos.
                 </div>
 
+                <hr />
+
+                <h4>Notificación al familiar</h4>
+
+                <p>
+                    Ingrese el correo electrónico del familiar
+                    autorizado para recibir la notificación
+                    de la cita médica.
+                </p>
+
+                <div class="mb-3">
+                    <label for="correoDestino"
+                           class="form-label">
+                        Correo electrónico del destinatario
+                    </label>
+
+                    <input type="email"
+                           id="correoDestino"
+                           name="correoDestino"
+                           value="@ViewBag.CorreoDestino"
+                           class="form-control"
+                           placeholder="ejemplo@gmail.com"
+                           autocomplete="email" />
+
+                    <small class="text-muted">
+                        El correo debe pertenecer al familiar
+                        autorizado del paciente.
+                    </small>
+                </div>
+
+                <div class="alert alert-info">
+                    Cuando la cita sea programada,
+                    el sistema podrá enviar una notificación
+                    al correo indicado.
+                </div>
+
                 <button type="submit"
                         class="btn btn-primary">
                     Programar cita

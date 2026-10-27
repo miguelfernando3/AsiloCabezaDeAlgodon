@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using AsilioCabezaAlgodon.Datos;
 using AsilioCabezaAlgodon.Entidades;
 
@@ -24,47 +25,86 @@ namespace AsilioCabezaAlgodon.Controllers
         {
             var pagos = await _context.Pagos
                 .OrderByDescending(p => p.Fecha)
+                .ThenByDescending(p => p.Id)
                 .ToListAsync();
 
-            var pacientes = await _context.Pacientes
+            ViewBag.NombresPacientes = await _context.Pacientes
                 .ToDictionaryAsync(
                     p => p.Id,
                     p => p.Nombre + " " + p.Apellido);
 
-            ViewBag.NombresPacientes = pacientes;
-
             return View(pagos);
         }
 
-        // Mostrar formulario
+        // Mostrar formulario de pagos
         [HttpGet]
         [Authorize(Roles = "Administrador,Recepcionista")]
         public async Task<IActionResult> Create()
         {
             await CargarListas();
 
-            return View(new Pago());
+            return View(new Pago
+            {
+                Fecha = DateTime.Today,
+                EsMensualidad = false
+            });
         }
 
-        // Guardar pago
+        // Registrar un pago
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador,Recepcionista")]
         public async Task<IActionResult> Create(Pago pago)
         {
+            // Verificar que el paciente exista
             bool existePaciente = await _context.Pacientes
                 .AnyAsync(p => p.Id == pago.PacienteId);
 
             if (!existePaciente)
             {
                 ModelState.AddModelError(
-                    "PacienteId",
+                    nameof(Pago.PacienteId),
                     "Seleccione un paciente válido.");
             }
 
+            // Validar datos de mensualidad
+            if (pago.EsMensualidad)
+            {
+                if (pago.CitaMedicaId.HasValue)
+                {
+                    ModelState.AddModelError(
+                        nameof(Pago.CitaMedicaId),
+                        "Una mensualidad no debe relacionarse con una cita médica.");
+                }
+
+                if (!pago.Mes.HasValue)
+                {
+                    ModelState.AddModelError(
+                        nameof(Pago.Mes),
+                        "Seleccione el mes de la mensualidad.");
+                }
+
+                if (!pago.Anio.HasValue)
+                {
+                    ModelState.AddModelError(
+                        nameof(Pago.Anio),
+                        "Ingrese el año de la mensualidad.");
+                }
+            }
+            else
+            {
+                // Los pagos normales no necesitan mes ni año
+                pago.Mes = null;
+                pago.Anio = null;
+
+                ModelState.Remove(nameof(Pago.Mes));
+                ModelState.Remove(nameof(Pago.Anio));
+            }
+
+            // Verificar la cita médica si se seleccionó
             CitaMedica? cita = null;
 
-            if (pago.CitaMedicaId.HasValue)
+            if (!pago.EsMensualidad && pago.CitaMedicaId.HasValue)
             {
                 cita = await _context.CitasMedicas
                     .FirstOrDefaultAsync(c =>
@@ -73,7 +113,7 @@ namespace AsilioCabezaAlgodon.Controllers
                 if (cita == null)
                 {
                     ModelState.AddModelError(
-                        "CitaMedicaId",
+                        nameof(Pago.CitaMedicaId),
                         "Seleccione una cita médica válida.");
                 }
                 else
@@ -81,62 +121,119 @@ namespace AsilioCabezaAlgodon.Controllers
                     if (cita.PacienteId != pago.PacienteId)
                     {
                         ModelState.AddModelError(
-                            "CitaMedicaId",
+                            nameof(Pago.CitaMedicaId),
                             "La cita no pertenece al paciente seleccionado.");
                     }
 
-                    decimal total = cita.CostoConsulta - cita.Descuento;
+                    decimal total =
+                        Math.Max(0m, cita.CostoConsulta - cita.Descuento);
+
                     decimal saldo = total - cita.MontoPagado;
 
                     if (saldo <= 0)
                     {
                         ModelState.AddModelError(
-                            "CitaMedicaId",
+                            nameof(Pago.CitaMedicaId),
                             "Esta cita no tiene saldo pendiente.");
                     }
                     else if (pago.Monto > saldo)
                     {
                         ModelState.AddModelError(
-                            "Monto",
+                            nameof(Pago.Monto),
                             $"El saldo pendiente de la cita es Q{saldo:F2}.");
                     }
                 }
             }
 
+            // Comprobar datos antes de guardar
             if (!ModelState.IsValid)
             {
                 await CargarListas();
                 return View(pago);
             }
 
-            // Guardar el pago y actualizar la cita juntos
+            // La transacción ayuda a evitar pagos simultáneos
+            // que dupliquen mensualidades o superen el saldo.
             await using var transaccion =
-                await _context.Database.BeginTransactionAsync();
+                await _context.Database.BeginTransactionAsync(
+                    IsolationLevel.Serializable);
 
             try
             {
-                _context.Pagos.Add(pago);
+                if (pago.EsMensualidad)
+                {
+                    // Una mensualidad completa por paciente, mes y año
+                    bool existeMensualidad = await _context.Pagos
+                        .AnyAsync(p =>
+                            p.PacienteId == pago.PacienteId &&
+                            p.EsMensualidad &&
+                            p.Mes == pago.Mes &&
+                            p.Anio == pago.Anio);
+
+                    if (existeMensualidad)
+                    {
+                        await transaccion.RollbackAsync();
+
+                        ModelState.AddModelError(
+                            "",
+                            "Este paciente ya tiene registrada una mensualidad para ese mes y año.");
+
+                        await CargarListas();
+                        return View(pago);
+                    }
+                }
 
                 if (cita != null)
                 {
-                    cita.MontoPagado += pago.Monto;
+                    // Consultar nuevamente el saldo dentro
+                    // de la transacción antes de guardar.
+                    var citaActual = await _context.CitasMedicas
+                        .FirstOrDefaultAsync(c => c.Id == cita.Id);
 
-                    decimal total = cita.CostoConsulta - cita.Descuento;
+                    if (citaActual == null)
+                    {
+                        await transaccion.RollbackAsync();
 
-                    if (cita.MontoPagado >= total)
-                    {
-                        cita.EstadoPago = "Pagado";
+                        ModelState.AddModelError(
+                            nameof(Pago.CitaMedicaId),
+                            "La cita ya no está disponible.");
+
+                        await CargarListas();
+                        return View(pago);
                     }
-                    else
+
+                    decimal total =
+                        Math.Max(0m,
+                            citaActual.CostoConsulta - citaActual.Descuento);
+
+                    decimal saldo = total - citaActual.MontoPagado;
+
+                    if (saldo <= 0 || pago.Monto > saldo)
                     {
-                        cita.EstadoPago = "Parcial";
+                        await transaccion.RollbackAsync();
+
+                        ModelState.AddModelError(
+                            nameof(Pago.Monto),
+                            "El monto supera el saldo disponible de la cita.");
+
+                        await CargarListas();
+                        return View(pago);
                     }
+
+                    citaActual.MontoPagado += pago.Monto;
+
+                    citaActual.EstadoPago =
+                        citaActual.MontoPagado >= total
+                        ? "Pagado"
+                        : "Parcial";
                 }
+
+                _context.Pagos.Add(pago);
 
                 await _context.SaveChangesAsync();
                 await transaccion.CommitAsync();
 
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
             catch
             {

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Json;
+using System.Net.Mail;
 using AsilioCabezaAlgodon.Datos;
 using AsilioCabezaAlgodon.Entidades;
 
@@ -137,28 +139,162 @@ namespace AsilioCabezaAlgodon.Controllers
                 await CargarListas();
                 return View(cita);
             }
+
             // Calcular automáticamente el estado del pago
-        if (total == 0)
-        {
-            cita.EstadoPago = "Pendiente";
+            if (total == 0)
+            {
+                cita.EstadoPago = "Pendiente";
             }
             else if (cita.MontoPagado >= total)
             {
                 cita.EstadoPago = "Pagado";
-                }
-                else if (cita.MontoPagado > 0)
-                {
-                    cita.EstadoPago = "Parcial";
-                    }
-                    else
-                    {
-                        cita.EstadoPago = "Pendiente";
-                        }
+            }
+            else if (cita.MontoPagado > 0)
+            {
+                cita.EstadoPago = "Parcial";
+            }
+            else
+            {
+                cita.EstadoPago = "Pendiente";
+            }
+
             // Guardar la cita en SQL Server
             _context.CitasMedicas.Add(cita);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Reenviar notificación de una cita médica
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Recepcionista,Fundacion")]
+        public async Task<IActionResult> ReenviarNotificacion(int id)
+        {
+            // Buscar la cita médica
+            var cita = await _context.CitasMedicas
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (cita == null)
+            {
+                return NotFound();
+            }
+
+            // Buscar al paciente
+            var paciente = await _context.Pacientes
+                .FirstOrDefaultAsync(p => p.Id == cita.PacienteId);
+
+            if (paciente == null)
+            {
+                TempData["Error"] =
+                    "No se encontró al paciente.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Buscar al médico
+            var medico = await _context.Medicos
+                .FirstOrDefaultAsync(m => m.Id == cita.MedicoId);
+
+            if (medico == null)
+            {
+                TempData["Error"] =
+                    "No se encontró al médico.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Buscar al familiar autorizado
+            var familiar = await _context.Familiares
+                .FirstOrDefaultAsync(f =>
+                    f.PacienteId == cita.PacienteId &&
+                    f.RecibeNotificaciones);
+
+            if (familiar == null)
+            {
+                TempData["Error"] =
+                    "Este paciente no tiene un familiar autorizado.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Verificar el correo electrónico
+            if (string.IsNullOrWhiteSpace(familiar.Correo))
+            {
+                TempData["Error"] =
+                    "El familiar autorizado no tiene correo electrónico.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                var correo = new MailAddress(familiar.Correo);
+
+                if (correo.Address != familiar.Correo.Trim())
+                {
+                    TempData["Error"] =
+                        "El correo del familiar no es válido.";
+
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            catch (FormatException)
+            {
+                TempData["Error"] =
+                    "El correo del familiar no es válido.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Preparar la información para Java
+            var datos = new
+            {
+                correoFamiliar = familiar.Correo,
+                nombreFamiliar = familiar.Nombre + " " +
+                                 familiar.Apellido,
+                nombrePaciente = paciente.Nombre + " " +
+                                 paciente.Apellido,
+                medicoReferido = medico.Nombre + " " +
+                                 medico.Apellido,
+                estadoPaciente = "Cita médica programada para el " +
+                    cita.Fecha.ToString("dd/MM/yyyy HH:mm")
+            };
+
+            try
+            {
+                using var cliente = new HttpClient();
+
+                cliente.Timeout = TimeSpan.FromSeconds(15);
+
+                // Enviar información al microservicio Java
+                var respuesta = await cliente.PostAsJsonAsync(
+                    "http://localhost:8080/api/v1/notificar-familiar",
+                    datos);
+
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    TempData["Mensaje"] =
+                        "La notificación fue reenviada correctamente al familiar.";
+                }
+                else
+                {
+                    TempData["Error"] =
+                        "Java no pudo enviar la notificación. Revise el microservicio.";
+                }
+            }
+            catch (HttpRequestException)
+            {
+                TempData["Error"] =
+                    "No se pudo conectar con el microservicio Java.";
+            }
+            catch (TaskCanceledException)
+            {
+                TempData["Error"] =
+                    "El microservicio Java tardó demasiado en responder.";
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         // Cargar pacientes y médicos en los selectores

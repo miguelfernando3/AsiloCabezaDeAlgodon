@@ -9,6 +9,11 @@
 
     var medicos = (List<AsilioCabezaAlgodon.Entidades.Medico>)
         ViewBag.Medicos;
+
+    bool puedeReenviar =
+        User.IsInRole("Administrador") ||
+        User.IsInRole("Recepcionista") ||
+        User.IsInRole("Fundacion");
 }
 
 <div class="container mt-4">
@@ -17,9 +22,21 @@
 
     <p>Listado de citas médicas y control de pagos del asilo.</p>
 
-    @if (User.IsInRole("Administrador") ||
-         User.IsInRole("Recepcionista") ||
-         User.IsInRole("Fundacion"))
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Mensaje"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    @if (puedeReenviar)
     {
         <a asp-controller="CitaMedica"
            asp-action="Create"
@@ -46,6 +63,11 @@
                     <th>Abonado (Q)</th>
                     <th>Saldo (Q)</th>
                     <th>Estado de pago</th>
+
+                    @if (puedeReenviar)
+                    {
+                        <th>Acciones</th>
+                    }
                 </tr>
             </thead>
 
@@ -181,6 +203,30 @@
                                 </span>
                             }
                         </td>
+
+                        <!-- REENVIAR NOTIFICACIÓN -->
+                        @if (puedeReenviar)
+                        {
+                            <td>
+                                <form asp-controller="CitaMedica"
+                                      asp-action="ReenviarNotificacion"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="id"
+                                           value="@cita.Id" />
+
+                                    <button type="submit"
+                                            class="btn btn-success btn-sm"
+                                            onclick="return confirm('¿Desea reenviar la notificación al familiar autorizado?');">
+                                        Reenviar notificación
+                                    </button>
+
+                                </form>
+                            </td>
+                        }
 
                     </tr>
                 }

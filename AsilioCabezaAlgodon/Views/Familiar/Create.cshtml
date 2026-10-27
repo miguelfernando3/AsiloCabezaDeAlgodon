@@ -92,6 +92,22 @@
               class="text-danger"></span>
     </div>
 
+    <!-- Autorización para recibir notificaciones médicas -->
+    <div class="mb-3 form-check">
+        <input asp-for="RecibeNotificaciones"
+               class="form-check-input"
+               type="checkbox" />
+
+        <label asp-for="RecibeNotificaciones"
+               class="form-check-label">
+            Autorizar a este familiar para recibir
+            notificaciones médicas por correo electrónico
+        </label>
+
+        <span asp-validation-for="RecibeNotificaciones"
+              class="text-danger"></span>
+    </div>
+
     <button type="submit" class="btn btn-primary">
         Guardar familiar
     </button>

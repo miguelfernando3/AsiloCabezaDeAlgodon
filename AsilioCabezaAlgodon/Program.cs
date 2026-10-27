@@ -38,6 +38,13 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddControllersWithViews();
 
+// Comunicación con el microservicio Java
+builder.Services.AddHttpClient("Notificaciones", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:8080/");
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+
 var app = builder.Build();
 
 // Configuración de errores

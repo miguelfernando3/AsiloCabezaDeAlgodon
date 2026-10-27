@@ -26,5 +26,8 @@ namespace AsilioCabezaAlgodon.Entidades
 
         [Required(ErrorMessage = "Ingrese el parentesco")]
         public string Parentesco { get; set; } = "";
+
+        [Display(Name = "Autorizar notificaciones médicas")]
+        public bool RecibeNotificaciones { get; set; } = false;
     }
 }

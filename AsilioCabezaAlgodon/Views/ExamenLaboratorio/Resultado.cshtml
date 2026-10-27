@@ -1,0 +1,65 @@
+
+@model AsilioCabezaAlgodon.Entidades.ExamenLaboratorio
+
+@{
+    ViewData["Title"] = "Registrar Resultado";
+}
+
+<h2>Registrar Resultado de Laboratorio</h2>
+
+<p>
+    Complete el resultado del examen solicitado.
+</p>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p>
+            <strong>Examen:</strong>
+            @Model.NombreExamen
+        </p>
+
+        <p>
+            <strong>Fecha de solicitud:</strong>
+            @Model.Fecha.ToString("dd/MM/yyyy HH:mm")
+        </p>
+
+        <p>
+            <strong>Costo:</strong>
+            Q @Model.Costo.ToString("N2")
+        </p>
+    </div>
+</div>
+
+<form asp-controller="ExamenLaboratorio"
+      asp-action="Resultado"
+      asp-route-id="@Model.Id"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="All"
+         class="text-danger"></div>
+
+    <div class="mb-3">
+        <label for="resultado" class="form-label">
+            Resultado del examen
+        </label>
+
+        <textarea id="resultado"
+                  name="resultado"
+                  class="form-control"
+                  rows="6"
+                  maxlength="4000"
+                  required>@ViewBag.ResultadoIngresado</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Guardar resultado
+    </button>
+
+    <a asp-controller="ExamenLaboratorio"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Cancelar
+    </a>
+</form>

@@ -11,62 +11,144 @@
 
 <h2>Exámenes de Laboratorio</h2>
 
-<p>Listado de exámenes realizados a los pacientes del asilo.</p>
+<p>
+    Consulte los exámenes solicitados y sus resultados.
+</p>
 
-<a asp-controller="ExamenLaboratorio"
-   asp-action="Create"
-   class="btn btn-primary mb-3">
-    Registrar Examen
-</a>
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Mensaje"]
+    </div>
+}
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Paciente</th>
-            <th>Nombre del examen</th>
-            <th>Resultado</th>
-            <th>Fecha</th>
-            <th>Costo (Q)</th>
-        </tr>
-    </thead>
+@if (TempData["Aviso"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["Aviso"]
+    </div>
+}
 
-    <tbody>
-        @foreach (var examen in Model)
-        {
-            var visita = visitas?.FirstOrDefault(
-                v => v.Id == examen.VisitaMedicaId);
+@if (User.IsInRole("Administrador") ||
+     User.IsInRole("Medico"))
+{
+    <a asp-controller="ExamenLaboratorio"
+       asp-action="Create"
+       class="btn btn-primary mb-3">
+        Solicitar examen
+    </a>
+}
 
-            var cita = citas?.FirstOrDefault(
-                c => c.Id == visita?.CitaMedicaId);
-
-            var paciente = pacientes?.FirstOrDefault(
-                p => p.Id == cita?.PacienteId);
-
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
             <tr>
-                <td>
-                    @(paciente == null
-                        ? "No disponible"
-                        : paciente.Nombre + " " + paciente.Apellido)
-                </td>
-
-                <td>@examen.NombreExamen</td>
-
-                <td>@examen.Resultado</td>
-
-                <td>@examen.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
-
-                <td>
-                    Q @examen.Costo.ToString("N2")
-                </td>
+                <th>Paciente</th>
+                <th>Examen</th>
+                <th>Estado</th>
+                <th>Resultado</th>
+                <th>Fecha</th>
+                <th>Costo (Q)</th>
+                <th>Acciones</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+
+        <tbody>
+            @foreach (var examen in Model)
+            {
+                var visita = visitas?.FirstOrDefault(
+                    v => v.Id == examen.VisitaMedicaId);
+
+                var cita = citas?.FirstOrDefault(
+                    c => c.Id == visita?.CitaMedicaId);
+
+                var paciente = pacientes?.FirstOrDefault(
+                    p => p.Id == cita?.PacienteId);
+
+                bool pendiente =
+                    string.IsNullOrWhiteSpace(examen.Resultado);
+
+                <tr>
+                    <td>
+                        @(paciente == null
+                            ? "No disponible"
+                            : paciente.Nombre + " " +
+                              paciente.Apellido)
+                    </td>
+
+                    <td>@examen.NombreExamen</td>
+
+                    <td>
+                        @if (pendiente)
+                        {
+                            <span class="badge bg-warning text-dark">
+                                Pendiente
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">
+                                Realizado
+                            </span>
+                        }
+                    </td>
+
+                    <td>
+                        @if (pendiente)
+                        {
+                            <span class="text-muted">
+                                Sin resultados
+                            </span>
+                        }
+                        else
+                        {
+                            @examen.Resultado
+                        }
+                    </td>
+
+                    <td>
+                        @examen.Fecha.ToString("dd/MM/yyyy HH:mm")
+                    </td>
+
+                    <td>
+                        Q @examen.Costo.ToString("N2")
+                    </td>
+
+                    <td>
+                        @if (pendiente &&
+                             (User.IsInRole("Administrador") ||
+                              User.IsInRole("Laboratorio")))
+                        {
+                            <a asp-controller="ExamenLaboratorio"
+                               asp-action="Resultado"
+                               asp-route-id="@examen.Id"
+                               class="btn btn-success btn-sm">
+                                Registrar resultado
+                            </a>
+                        }
+                        else if (!pendiente)
+                        {
+                            <span class="text-success">
+                                Completado
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">
+                                Pendiente
+                            </span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
 @if (Model.Count == 0)
 {
     <div class="alert alert-info">
-        Todavía no hay exámenes de laboratorio registrados.
+        Todavía no hay exámenes registrados.
     </div>
 }
 

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AsilioCabezaAlgodon.Datos;
 using AsilioCabezaAlgodon.Entidades;
+using System.ComponentModel.DataAnnotations;
 
 namespace AsilioCabezaAlgodon.Controllers
 {
@@ -18,27 +19,29 @@ namespace AsilioCabezaAlgodon.Controllers
             _context = context;
         }
 
-        // Mostrar exámenes registrados
+        // Mostrar exámenes pendientes y realizados
         public async Task<IActionResult> Index()
         {
             var examenes = await _context.ExamenesLaboratorio
+                .AsNoTracking()
                 .OrderByDescending(e => e.Fecha)
                 .ToListAsync();
 
             ViewBag.Visitas = await _context.VisitasMedicas
-                .ToListAsync();
+                .AsNoTracking().ToListAsync();
 
             ViewBag.Citas = await _context.CitasMedicas
-                .ToListAsync();
+                .AsNoTracking().ToListAsync();
 
             ViewBag.Pacientes = await _context.Pacientes
-                .ToListAsync();
+                .AsNoTracking().ToListAsync();
 
             return View(examenes);
         }
 
-        // Mostrar formulario de registro
+        // Formulario para solicitar un examen
         [HttpGet]
+        [Authorize(Roles = "Administrador,Medico")]
         public async Task<IActionResult> Create()
         {
             await CargarVisitas();
@@ -46,51 +49,58 @@ namespace AsilioCabezaAlgodon.Controllers
             return View(new ExamenLaboratorio
             {
                 Fecha = DateTime.Now,
-                Costo = 0
+                Costo = 0,
+                Resultado = ""
             });
         }
 
-        // Guardar examen de laboratorio
+        // Guardar solicitud de examen
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Medico")]
         public async Task<IActionResult> Create(
             ExamenLaboratorio examen)
         {
+            examen.Id = 0;
+            examen.Resultado = "";
+
+            ModelState.Remove(nameof(ExamenLaboratorio.Id));
+            ModelState.Remove(nameof(ExamenLaboratorio.Resultado));
+
             if (!await _context.VisitasMedicas
                 .AnyAsync(v => v.Id == examen.VisitaMedicaId))
             {
                 ModelState.AddModelError(
-                    "VisitaMedicaId",
-                    "Selecciona una visita médica válida.");
+                    nameof(examen.VisitaMedicaId),
+                    "Seleccione una visita médica válida.");
             }
 
             if (string.IsNullOrWhiteSpace(examen.NombreExamen))
             {
                 ModelState.AddModelError(
-                    "NombreExamen",
-                    "Ingresa el nombre del examen.");
+                    nameof(examen.NombreExamen),
+                    "Ingrese el nombre del examen.");
             }
-
-            if (string.IsNullOrWhiteSpace(examen.Resultado))
+            else if (examen.NombreExamen.Trim().Length > 200)
             {
                 ModelState.AddModelError(
-                    "Resultado",
-                    "Ingresa el resultado del examen.");
+                    nameof(examen.NombreExamen),
+                    "El nombre no puede superar 200 caracteres.");
             }
 
-            if (examen.Fecha == default)
+            if (examen.Fecha == default ||
+                examen.Fecha > DateTime.Now)
             {
                 ModelState.AddModelError(
-                    "Fecha",
-                    "Selecciona una fecha válida.");
+                    nameof(examen.Fecha),
+                    "Ingrese una fecha válida que no sea futura.");
             }
 
-            // Validar el costo del examen
             if (examen.Costo < 0)
             {
                 ModelState.AddModelError(
-                    "Costo",
-                    "El costo del examen no puede ser negativo.");
+                    nameof(examen.Costo),
+                    "El costo no puede ser negativo.");
             }
 
             if (!ModelState.IsValid)
@@ -99,26 +109,117 @@ namespace AsilioCabezaAlgodon.Controllers
                 return View(examen);
             }
 
+            examen.NombreExamen = examen.NombreExamen.Trim();
+
             _context.ExamenesLaboratorio.Add(examen);
             await _context.SaveChangesAsync();
 
             TempData["Mensaje"] =
-                "Examen de laboratorio registrado correctamente.";
+                "El examen fue solicitado correctamente. Está pendiente de resultados.";
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
-        // Cargar visitas médicas disponibles
+        // Mostrar formulario para registrar resultado
+        [HttpGet]
+        [Authorize(Roles = "Administrador,Laboratorio")]
+        public async Task<IActionResult> Resultado(int id)
+        {
+            var examen = await _context.ExamenesLaboratorio
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (examen == null)
+                return NotFound();
+
+            if (!string.IsNullOrWhiteSpace(examen.Resultado))
+            {
+                TempData["Aviso"] =
+                    "Este examen ya tiene un resultado registrado.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(examen);
+        }
+
+        // Guardar resultado sin modificar los otros datos
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Laboratorio")]
+        public async Task<IActionResult> Resultado(
+            int id,
+            string? resultado)
+        {
+            if (string.IsNullOrWhiteSpace(resultado))
+            {
+                ModelState.AddModelError(
+                    "resultado",
+                    "Ingrese el resultado del examen.");
+            }
+            else if (resultado.Length > 4000)
+            {
+                ModelState.AddModelError(
+                    "resultado",
+                    "El resultado no puede superar 4000 caracteres.");
+            }
+
+            var examen = await _context.ExamenesLaboratorio
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (examen == null)
+                return NotFound();
+
+            if (!string.IsNullOrWhiteSpace(examen.Resultado))
+            {
+                TempData["Aviso"] =
+                    "Este examen ya tiene un resultado registrado.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.ResultadoIngresado = resultado;
+                return View(examen);
+            }
+
+            // Actualización condicional:
+            // evita sobrescribir un resultado ya guardado
+            int actualizados = await _context.ExamenesLaboratorio
+                .Where(e => e.Id == id &&
+                    (e.Resultado == null || e.Resultado == ""))
+                .ExecuteUpdateAsync(cambios => cambios
+                    .SetProperty(
+                        e => e.Resultado,
+                        resultado!.Trim()));
+
+            if (actualizados == 0)
+            {
+                TempData["Aviso"] =
+                    "El resultado ya fue registrado por otro usuario.";
+            }
+            else
+            {
+                TempData["Mensaje"] =
+                    "Resultado de laboratorio guardado correctamente.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Cargar visitas médicas
         private async Task CargarVisitas()
         {
             var visitas = await _context.VisitasMedicas
-                .ToListAsync();
+                .AsNoTracking().ToListAsync();
 
             var citas = await _context.CitasMedicas
-                .ToListAsync();
+                .AsNoTracking().ToListAsync();
 
             var pacientes = await _context.Pacientes
-                .ToListAsync();
+                .AsNoTracking().ToListAsync();
 
             var opciones = visitas.Select(v =>
             {
@@ -133,10 +234,12 @@ namespace AsilioCabezaAlgodon.Controllers
                 return new
                 {
                     v.Id,
-                    Descripcion = (paciente == null
-                        ? "Paciente no disponible"
-                        : paciente.Nombre + " " + paciente.Apellido)
-                        + " - " + v.Fecha.ToString("dd/MM/yyyy")
+                    Descripcion =
+                        (paciente == null
+                            ? "Paciente no disponible"
+                            : paciente.Nombre + " " + paciente.Apellido)
+                        + " - " +
+                        v.Fecha.ToString("dd/MM/yyyy")
                 };
             }).ToList();
 

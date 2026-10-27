@@ -23,24 +23,23 @@ namespace AsilioCabezaAlgodon.Datos
         public DbSet<Donacion> Donaciones { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
 
-        // Solicitudes de atención médica a especialistas
         public DbSet<SolicitudMedica> SolicitudesMedicas { get; set; }
 
-        // Historial médico de los pacientes
         public DbSet<HistorialMedico> HistorialesMedicos { get; set; }
+
+        // Gastos realizados por la fundación
+        public DbSet<GastoFundacion> GastosFundacion { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Cada paciente puede tener un historial médico general
             modelBuilder.Entity<HistorialMedico>()
                 .HasOne<Paciente>()
                 .WithMany()
                 .HasForeignKey(h => h.PacienteId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Evitar más de un historial general por paciente
             modelBuilder.Entity<HistorialMedico>()
                 .HasIndex(h => h.PacienteId)
                 .IsUnique();

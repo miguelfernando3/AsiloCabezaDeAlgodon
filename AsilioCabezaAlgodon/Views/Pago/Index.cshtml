@@ -7,6 +7,23 @@
     var nombresPacientes =
         ViewBag.NombresPacientes as Dictionary<int, string>
         ?? new Dictionary<int, string>();
+
+    string[] meses =
+    {
+        "",
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre"
+    };
 }
 
 <div class="container mt-4">
@@ -14,7 +31,8 @@
     <h2>Pagos Registrados</h2>
     <p>Listado de pagos realizados para los pacientes del asilo.</p>
 
-    @if (User.IsInRole("Administrador") || User.IsInRole("Recepcionista"))
+    @if (User.IsInRole("Administrador") ||
+         User.IsInRole("Recepcionista"))
     {
         <a asp-controller="Pago"
            asp-action="Create"
@@ -23,41 +41,84 @@
         </a>
     }
 
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Nombre del Paciente</th>
-                <th>Concepto</th>
-                <th>Fecha</th>
-                <th>Monto (Q)</th>
-            </tr>
-        </thead>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
 
-        <tbody>
-            @foreach (var pago in Model)
-            {
+            <thead>
                 <tr>
-                    <td>
-                        @if (nombresPacientes.TryGetValue(
-                            pago.PacienteId, out var nombrePaciente))
-                        {
-                            @nombrePaciente
-                        }
-                        else
-                        {
-                            <span>Paciente no encontrado</span>
-                        }
-                    </td>
-
-                    <td>@pago.Concepto</td>
-
-                    <td>@pago.Fecha.ToString("dd/MM/yyyy")</td>
-
-                    <td>Q @pago.Monto.ToString("N2")</td>
+                    <th>Nombre del Paciente</th>
+                    <th>Tipo de pago</th>
+                    <th>Mes / Año</th>
+                    <th>Concepto</th>
+                    <th>Fecha</th>
+                    <th>Monto (Q)</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+
+            <tbody>
+                @foreach (var pago in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (nombresPacientes.TryGetValue(
+                                pago.PacienteId,
+                                out var nombrePaciente))
+                            {
+                                @nombrePaciente
+                            }
+                            else
+                            {
+                                <span>Paciente no encontrado</span>
+                            }
+                        </td>
+
+                        <td>
+                            @if (pago.EsMensualidad)
+                            {
+                                <span class="badge bg-success">
+                                    Mensualidad
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    Pago general
+                                </span>
+                            }
+                        </td>
+
+                        <td>
+                            @if (pago.EsMensualidad &&
+                                 pago.Mes.HasValue &&
+                                 pago.Anio.HasValue &&
+                                 pago.Mes.Value >= 1 &&
+                                 pago.Mes.Value <= 12)
+                            {
+                                @meses[pago.Mes.Value]
+                                <span> </span>
+                                @pago.Anio.Value
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+
+                        <td>@pago.Concepto</td>
+
+                        <td>
+                            @pago.Fecha.ToString("dd/MM/yyyy")
+                        </td>
+
+                        <td>
+                            Q @pago.Monto.ToString("N2")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
 
     @if (Model.Count == 0)
     {

@@ -17,5 +17,8 @@ namespace AsilioCabezaAlgodon.Entidades
 
         // Relación con la visita médica
         public int? VisitaMedicaId { get; set; }
+
+        // Pendiente o Despachado
+        public string Estado { get; set; } = "Pendiente";
     }
 }

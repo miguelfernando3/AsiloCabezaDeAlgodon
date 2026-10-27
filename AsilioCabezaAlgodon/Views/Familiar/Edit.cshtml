@@ -1,0 +1,131 @@
+
+@model AsilioCabezaAlgodon.Entidades.Familiar
+
+@{
+    ViewData["Title"] = "Editar familiar";
+}
+
+<div class="container mt-4">
+
+    <h2>Editar familiar</h2>
+
+    <p>
+        Modifique los datos del familiar y el correo
+        donde recibirá las notificaciones médicas.
+    </p>
+
+    <div class="alert alert-info">
+        <strong>Paciente:</strong>
+        @ViewBag.NombrePaciente
+    </div>
+
+    <form asp-controller="Familiar"
+          asp-action="Edit"
+          asp-route-id="@Model.Id"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly"
+             class="text-danger"></div>
+
+        <div class="mb-3">
+            <label asp-for="Nombre" class="form-label">
+                Nombre
+            </label>
+
+            <input asp-for="Nombre"
+                   class="form-control" />
+
+            <span asp-validation-for="Nombre"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Apellido" class="form-label">
+                Apellido
+            </label>
+
+            <input asp-for="Apellido"
+                   class="form-control" />
+
+            <span asp-validation-for="Apellido"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Parentesco" class="form-label">
+                Parentesco
+            </label>
+
+            <input asp-for="Parentesco"
+                   class="form-control" />
+
+            <span asp-validation-for="Parentesco"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Telefono" class="form-label">
+                Teléfono
+            </label>
+
+            <input asp-for="Telefono"
+                   class="form-control" />
+
+            <span asp-validation-for="Telefono"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Correo" class="form-label">
+                Correo electrónico
+            </label>
+
+            <input asp-for="Correo"
+                   type="email"
+                   class="form-control"
+                   placeholder="ejemplo@gmail.com" />
+
+            <span asp-validation-for="Correo"
+                  class="text-danger"></span>
+
+            <small class="text-muted">
+                Las notificaciones se enviarán a este
+                correo si el familiar está autorizado.
+            </small>
+        </div>
+
+        <div class="alert alert-secondary">
+            <strong>Notificaciones:</strong>
+
+            @if (Model.RecibeNotificaciones)
+            {
+                <span class="badge bg-success">
+                    Autorizado
+                </span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">
+                    No autorizado
+                </span>
+            }
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Guardar cambios
+        </button>
+
+        <a asp-controller="Familiar"
+           asp-action="Index"
+           class="btn btn-secondary">
+            Cancelar
+        </a>
+
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

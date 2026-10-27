@@ -36,7 +36,66 @@
                   class="text-danger"></span>
         </div>
 
-        <div class="mb-3">
+        <div class="mb-3 form-check">
+            <input asp-for="EsMensualidad"
+                   class="form-check-input"
+                   type="checkbox"
+                   id="EsMensualidad" />
+
+            <label for="EsMensualidad"
+                   class="form-check-label">
+                ¿Es una mensualidad?
+            </label>
+        </div>
+
+        <div id="DatosMensualidad"
+             style="display:none;">
+
+            <div class="mb-3">
+                <label asp-for="Mes" class="form-label">
+                    Mes de la mensualidad
+                </label>
+
+                <select asp-for="Mes"
+                        class="form-select">
+                    <option value="">Seleccione un mes</option>
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+
+                <span asp-validation-for="Mes"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Anio" class="form-label">
+                    Año de la mensualidad
+                </label>
+
+                <input asp-for="Anio"
+                       type="number"
+                       min="2020"
+                       max="2100"
+                       class="form-control"
+                       placeholder="Ejemplo: 2026" />
+
+                <span asp-validation-for="Anio"
+                      class="text-danger"></span>
+            </div>
+
+        </div>
+
+        <div class="mb-3" id="SeccionCita">
             <label asp-for="CitaMedicaId" class="form-label">
                 Cita médica (opcional)
             </label>
@@ -44,11 +103,9 @@
             <select asp-for="CitaMedicaId"
                     asp-items="ViewBag.ListaCitas"
                     class="form-select">
-
                 <option value="">
                     Pago general (sin cita médica)
                 </option>
-
             </select>
 
             <span asp-validation-for="CitaMedicaId"
@@ -97,7 +154,7 @@
 
             <input asp-for="Concepto"
                    class="form-control"
-                   placeholder="Ejemplo: Abono de consulta médica"
+                   placeholder="Ejemplo: Mensualidad de octubre"
                    required />
 
             <span asp-validation-for="Concepto"
@@ -119,5 +176,38 @@
 </div>
 
 @section Scripts {
+
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function MostrarMensualidad() {
+
+            var casilla =
+                document.getElementById("EsMensualidad");
+
+            var datos =
+                document.getElementById("DatosMensualidad");
+
+            var seccionCita =
+                document.getElementById("SeccionCita");
+
+            var cita =
+                document.getElementById("CitaMedicaId");
+
+            if (casilla.checked) {
+                datos.style.display = "block";
+                seccionCita.style.display = "none";
+                cita.value = "";
+            }
+            else {
+                datos.style.display = "none";
+                seccionCita.style.display = "block";
+            }
+        }
+
+        document.getElementById("EsMensualidad")
+            .addEventListener("change", MostrarMensualidad);
+
+        MostrarMensualidad();
+    </script>
 }

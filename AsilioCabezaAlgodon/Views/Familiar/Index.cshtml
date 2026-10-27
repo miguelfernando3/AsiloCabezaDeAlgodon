@@ -24,6 +24,13 @@
     </div>
 }
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
 @if (User.IsInRole("Administrador") ||
      User.IsInRole("Recepcionista"))
 {
@@ -50,6 +57,13 @@ else
                 <th>Parentesco</th>
                 <th>Teléfono</th>
                 <th>Correo</th>
+                <th>Notificaciones</th>
+
+                @if (User.IsInRole("Administrador") ||
+                     User.IsInRole("Recepcionista"))
+                {
+                    <th>Acciones</th>
+                }
             </tr>
         </thead>
 
@@ -75,6 +89,61 @@ else
                     <td>@familiar.Telefono</td>
 
                     <td>@familiar.Correo</td>
+
+                    <td>
+                        @if (familiar.RecibeNotificaciones)
+                        {
+                            <span class="badge bg-success">
+                                Autorizado
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+                                No autorizado
+                            </span>
+                        }
+                    </td>
+
+                    @if (User.IsInRole("Administrador") ||
+                         User.IsInRole("Recepcionista"))
+                    {
+                        <td>
+                            <a asp-controller="Familiar"
+                            asp-action="Edit"
+                            asp-route-id="@familiar.Id"
+                            class="btn btn-primary btn-sm mb-2">
+                            Editar
+                            </a>
+                            <form asp-controller="Familiar"
+                                  asp-action="CambiarAutorizacion"
+                                  method="post">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@familiar.Id" />
+
+                                @if (familiar.RecibeNotificaciones)
+                                {
+                                    <button type="submit"
+                                            class="btn btn-warning btn-sm"
+                                            onclick="return confirm('¿Desea quitar la autorización a este familiar?');">
+                                        Quitar autorización
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit"
+                                            class="btn btn-success btn-sm"
+                                            onclick="return confirm('¿Desea autorizar a este familiar para recibir notificaciones médicas?');">
+                                        Autorizar
+                                    </button>
+                                }
+                            </form>
+                        </td>
+                    }
                 </tr>
             }
         </tbody>
