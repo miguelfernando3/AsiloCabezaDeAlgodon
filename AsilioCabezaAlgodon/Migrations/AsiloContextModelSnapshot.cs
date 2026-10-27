@@ -174,6 +174,9 @@ namespace AsilioCabezaAlgodon.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("RecibeNotificaciones")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Telefono")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -181,6 +184,35 @@ namespace AsilioCabezaAlgodon.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Familiares");
+                });
+
+            modelBuilder.Entity("AsilioCabezaAlgodon.Entidades.GastoFundacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Concepto")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GastosFundacion");
                 });
 
             modelBuilder.Entity("AsilioCabezaAlgodon.Entidades.HistorialMedico", b =>
@@ -256,6 +288,10 @@ namespace AsilioCabezaAlgodon.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Duracion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Estado")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -344,6 +380,9 @@ namespace AsilioCabezaAlgodon.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("Anio")
+                        .HasColumnType("int");
+
                     b.Property<int?>("CitaMedicaId")
                         .HasColumnType("int");
 
@@ -352,8 +391,14 @@ namespace AsilioCabezaAlgodon.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<bool>("EsMensualidad")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("Mes")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Monto")
                         .HasColumnType("decimal(18,2)");
