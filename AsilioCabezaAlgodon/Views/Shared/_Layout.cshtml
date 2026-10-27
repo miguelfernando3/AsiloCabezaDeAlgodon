@@ -1,50 +1,436 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿
+<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - AsilioCabezaAlgodon</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/AsilioCabezaAlgodon.styles.css" asp-append-version="true" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - Asilo Cabeza de Algodón</title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/AsilioCabezaAlgodon.styles.css"
+          asp-append-version="true" />
+
+    <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .sistema {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .menu-lateral {
+            width: 255px;
+            height: 100vh;
+            flex-shrink: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background-color: #302b4e;
+            color: white;
+            padding: 20px 12px;
+        }
+
+        .menu-titulo {
+            text-align: center;
+            border-bottom: 1px solid #55506d;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .menu-titulo h5 {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .menu-titulo p {
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .menu-seccion {
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #c5b9ff;
+            margin: 22px 12px 10px;
+            font-weight: bold;
+        }
+
+        .menu-enlace {
+            display: block;
+            padding: 12px 14px;
+            margin-bottom: 3px;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .menu-enlace:hover {
+            background-color: #655a93;
+            color: white;
+        }
+
+        .menu-enlace.activo {
+            background-color: #655a93;
+        }
+
+        .contenido-principal {
+            flex: 1;
+            min-width: 0;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background-color: #f5f6fa;
+        }
+
+        .barra-superior {
+            background-color: white;
+            padding: 15px 25px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .barra-superior h5 {
+            margin: 0;
+            font-weight: bold;
+            color: #302b4e;
+        }
+
+        .usuario-superior {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .contenido {
+            padding: 25px;
+        }
+
+        .menu-lateral::-webkit-scrollbar,
+        .contenido-principal::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .menu-lateral::-webkit-scrollbar-thumb {
+            background-color: #71669b;
+            border-radius: 8px;
+        }
+
+        .contenido-principal::-webkit-scrollbar-thumb {
+            background-color: #b8b8c4;
+            border-radius: 8px;
+        }
+
+        @@media (max-width: 768px) {
+            .sistema {
+                display: block;
+                height: 100vh;
+                overflow-y: auto;
+            }
+
+            .menu-lateral {
+                width: 100%;
+                height: 220px;
+                overflow-y: auto;
+            }
+
+            .contenido-principal {
+                width: 100%;
+                height: auto;
+                overflow: visible;
+            }
+
+            .contenido {
+                padding: 15px;
+            }
+
+            .barra-superior {
+                padding: 12px 15px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">AsilioCabezaAlgodon</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
+    <div class="sistema">
+
+        <!-- MENÚ LATERAL -->
+        <aside class="menu-lateral">
+
+            <div class="menu-titulo">
+                <h5>Asilo Cabeza de Algodón</h5>
+                <p>Sistema de Administración</p>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+            <div class="menu-seccion">GENERAL</div>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    🏠 Inicio
+                </a>
+            }
+
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Recepcionista") ||
+                 User.IsInRole("Medico") ||
+                 User.IsInRole("Enfermero"))
+            {
+                <a asp-controller="Paciente"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    👥 Pacientes
+                </a>
+            }
+
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Medico") ||
+                 User.IsInRole("Enfermero"))
+            {
+                <a asp-controller="HistorialMedico"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    📋 Historial médico
+                </a>
+            }
+
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Recepcionista") ||
+                 User.IsInRole("Medico") ||
+                 User.IsInRole("Fundacion"))
+            {
+                <a asp-controller="CitaMedica"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    📅 Citas médicas
+                </a>
+            }
+
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Medico") ||
+                 User.IsInRole("Enfermero"))
+            {
+                <a asp-controller="VisitaMedica"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    🩺 Visitas médicas
+                </a>
+            }
+
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Medico") ||
+                 User.IsInRole("Fundacion"))
+            {
+                <a asp-controller="SolicitudMedica"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    📝 Solicitudes médicas
+                </a>
+            }
+
+            <!-- PERSONAL Y FAMILIARES -->
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Fundacion") ||
+                 User.IsInRole("Recepcionista") ||
+                 User.IsInRole("Medico") ||
+                 User.IsInRole("Enfermero"))
+            {
+                <div class="menu-seccion">
+                    PERSONAL Y FAMILIARES
+                </div>
+            }
+
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Fundacion"))
+            {
+                <a asp-controller="Medico"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    👨‍⚕️ Médicos
+                </a>
+            }
+
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Recepcionista") ||
+                 User.IsInRole("Medico") ||
+                 User.IsInRole("Enfermero"))
+            {
+                <a asp-controller="Familiar"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    👨‍👩‍👧 Familiares
+                </a>
+            }
+
+            <!-- LABORATORIO Y FARMACIA -->
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Medico") ||
+                 User.IsInRole("Laboratorio") ||
+                 User.IsInRole("Farmacia") ||
+                 User.IsInRole("Fundacion"))
+            {
+                <div class="menu-seccion">
+                    LABORATORIO Y FARMACIA
+                </div>
+            }
+
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Medico") ||
+                 User.IsInRole("Laboratorio"))
+            {
+                <a asp-controller="ExamenLaboratorio"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    🧪 Exámenes de laboratorio
+                </a>
+            }
+
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Medico") ||
+                 User.IsInRole("Farmacia") ||
+                 User.IsInRole("Fundacion"))
+            {
+                <a asp-controller="Medicamento"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    💊 Medicamentos
+                </a>
+            }
+
+            <!-- ADMINISTRACIÓN -->
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Recepcionista") ||
+                 User.IsInRole("Fundacion"))
+            {
+                <div class="menu-seccion">
+                    ADMINISTRACIÓN
+                </div>
+            }
+
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Recepcionista") ||
+                 User.IsInRole("Fundacion"))
+            {
+                <a asp-controller="Pago"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    💰 Pagos
+                </a>
+            }
+
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Fundacion"))
+            {
+                <a asp-controller="Donacion"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    🎁 Donaciones
+                </a>
+            }
+
+            @if (User.IsInRole("Administrador") ||
+                 User.IsInRole("Fundacion"))
+            {
+                <a asp-controller="GastoFundacion"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    🧾 Gastos de la fundación
+                </a>
+            }
+
+            @if (User.IsInRole("Administrador"))
+            {
+                <a asp-controller="Reporte"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    📊 Reportes
+                </a>
+
+                <a asp-controller="Usuario"
+                   asp-action="Index"
+                   class="menu-enlace">
+                    👤 Usuarios
+                </a>
+            }
+
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="contenido-principal">
+
+            <header class="barra-superior">
+                <h5>Asilo Cabeza de Algodón</h5>
+
+                <div class="usuario-superior">
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <span>@User.Identity.Name</span>
+
+                        <form asp-controller="Cuenta"
+                              asp-action="Logout"
+                              method="post"
+                              class="m-0">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="btn btn-outline-danger btn-sm">
+                                Cerrar sesión
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-controller="Cuenta"
+                           asp-action="Login"
+                           class="btn btn-primary btn-sm">
+                            Iniciar sesión
+                        </a>
+                    }
+
+                </div>
+            </header>
+
+            <main class="contenido">
+                @RenderBody()
+            </main>
+
+            <footer class="text-center text-muted py-3">
+                © 2026 - Asilo Cabeza de Algodón
+            </footer>
+
+        </div>
+
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - AsilioCabezaAlgodon - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

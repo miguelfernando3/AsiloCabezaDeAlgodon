@@ -137,58 +137,132 @@ namespace AsilioCabezaAlgodon.Controllers
             return View();
         }
 
-        // Cobros por fechas
+        // Cobros por paciente y fechas
         [HttpGet]
         public async Task<IActionResult> Cobros(
-            DateTime? fechaInicio,
-            DateTime? fechaFin)
+            DateTime? fechaInicio, DateTime? fechaFin, int? pacienteId)
         {
             DateTime inicio = fechaInicio?.Date
-                ?? new DateTime(
-                    DateTime.Today.Year,
-                    DateTime.Today.Month,
-                    1);
-
-            DateTime fin = fechaFin?.Date
-                ?? DateTime.Today;
+                ?? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            DateTime fin = fechaFin?.Date ?? DateTime.Today;
 
             ViewBag.FechaInicio = inicio;
             ViewBag.FechaFin = fin;
+            ViewBag.PacienteId = pacienteId;
+
+            var pacientes = await _context.Pacientes
+                .OrderBy(p => p.Nombre)
+                .ThenBy(p => p.Apellido)
+                .ToListAsync();
+
+            ViewBag.ListaPacientes = new SelectList(
+                pacientes.Select(p => new {
+                    p.Id,
+                    NombreCompleto = p.Nombre + " " + p.Apellido
+                }), "Id", "NombreCompleto", pacienteId);
+
+            ViewBag.NombresPacientes = pacientes.ToDictionary(
+                p => p.Id, p => p.Nombre + " " + p.Apellido);
+
+            ViewBag.TotalCobrado = 0m;
+            ViewBag.CantidadPagos = 0;
+            ViewBag.CitasDetalle = new List<CitaMedica>();
+            ViewBag.ExamenesDetalle = new List<ExamenLaboratorio>();
+            ViewBag.MedicamentosDetalle = new List<Medicamento>();
+            ViewBag.TotalConsultas = 0m;
+            ViewBag.TotalLaboratorio = 0m;
+            ViewBag.TotalMedicamentos = 0m;
+            ViewBag.TotalGastosMedicos = 0m;
 
             if (inicio > fin)
             {
-                ModelState.AddModelError(
-                    "",
+                ModelState.AddModelError("",
                     "La fecha inicial no puede ser mayor que la fecha final.");
-
-                ViewBag.NombresPacientes =
-                    new Dictionary<int, string>();
-
-                ViewBag.TotalCobrado = 0m;
-                ViewBag.CantidadPagos = 0;
-
                 return View(new List<Pago>());
             }
 
-            var pagos = await _context.Pagos
-                .Where(p => p.Fecha >= inicio &&
-                            p.Fecha < fin.AddDays(1))
-                .OrderByDescending(p => p.Fecha)
+            if (pacienteId.HasValue &&
+                !pacientes.Any(p => p.Id == pacienteId.Value))
+            {
+                ModelState.AddModelError("", "El paciente seleccionado no existe.");
+                return View(new List<Pago>());
+            }
+
+            DateTime finExclusivo = fin.AddDays(1);
+
+            var pagosQuery = _context.Pagos.Where(p =>
+                p.Fecha >= inicio && p.Fecha < finExclusivo);
+
+            var citasQuery = _context.CitasMedicas.Where(c =>
+                c.Fecha >= inicio && c.Fecha < finExclusivo);
+
+            if (pacienteId.HasValue)
+            {
+                pagosQuery = pagosQuery.Where(p => p.PacienteId == pacienteId.Value);
+                citasQuery = citasQuery.Where(c => c.PacienteId == pacienteId.Value);
+            }
+
+            var pagos = await pagosQuery
+                .OrderByDescending(p => p.Fecha).ToListAsync();
+            var citas = await citasQuery
+                .OrderByDescending(c => c.Fecha).ToListAsync();
+
+            // Laboratorios por fecha de examen.
+            // Medicamentos por fecha de visita.
+            var citasPacienteQuery = _context.CitasMedicas.AsQueryable();
+
+            if (pacienteId.HasValue)
+            {
+                citasPacienteQuery = citasPacienteQuery.Where(c =>
+                    c.PacienteId == pacienteId.Value);
+            }
+
+            var idsCitasPaciente = await citasPacienteQuery
+                .Select(c => c.Id).ToListAsync();
+
+            var visitasPaciente = await _context.VisitasMedicas
+                .Where(v => idsCitasPaciente.Contains(v.CitaMedicaId))
                 .ToListAsync();
 
-            var pacientes = await _context.Pacientes
-                .ToDictionaryAsync(
-                    p => p.Id,
-                    p => p.Nombre + " " + p.Apellido);
+            var idsVisitasPaciente = visitasPaciente
+                .Select(v => v.Id).ToList();
 
-            ViewBag.NombresPacientes = pacientes;
+            var idsVisitasEnPeriodo = visitasPaciente
+                .Where(v => v.Fecha >= inicio && v.Fecha < finExclusivo)
+                .Select(v => v.Id).ToList();
+
+            var examenes = await _context.ExamenesLaboratorio
+                .Where(e => idsVisitasPaciente.Contains(e.VisitaMedicaId)
+                    && e.Fecha >= inicio && e.Fecha < finExclusivo)
+                .OrderByDescending(e => e.Fecha).ToListAsync();
+
+            var medicamentos = await _context.Medicamentos
+                .Where(m => m.VisitaMedicaId.HasValue
+                    && idsVisitasEnPeriodo.Contains(m.VisitaMedicaId.Value)
+                    && m.Estado == "Despachado")
+                .ToListAsync();
+
+            decimal totalConsultas = citas.Sum(c =>
+                Math.Max(0m, c.CostoConsulta - c.Descuento));
+
+            decimal totalLaboratorio = examenes.Sum(e => e.Costo);
+            decimal totalMedicamentos = medicamentos.Sum(m => m.Costo);
+
             ViewBag.TotalCobrado = pagos.Sum(p => p.Monto);
             ViewBag.CantidadPagos = pagos.Count;
+            ViewBag.CitasDetalle = citas;
+            ViewBag.ExamenesDetalle = examenes;
+            ViewBag.MedicamentosDetalle = medicamentos;
+            ViewBag.TotalConsultas = totalConsultas;
+            ViewBag.TotalLaboratorio = totalLaboratorio;
+            ViewBag.TotalMedicamentos = totalMedicamentos;
+            ViewBag.TotalGastosMedicos =
+                totalConsultas + totalLaboratorio + totalMedicamentos;
 
             return View(pagos);
         }
 
-        // Reporte de ingresos de la fundación
+        // Ingresos
         [HttpGet]
         public async Task<IActionResult> Ingresos()
         {
@@ -213,7 +287,7 @@ namespace AsilioCabezaAlgodon.Controllers
             return View();
         }
 
-        // Reporte de gastos de la fundación
+        // Gastos de la fundación
         [HttpGet]
         public async Task<IActionResult> GastosFundacion()
         {
@@ -226,7 +300,7 @@ namespace AsilioCabezaAlgodon.Controllers
             return View(gastos);
         }
 
-        // Reporte de laboratorios por paciente
+        // Laboratorios por paciente
         [HttpGet]
         public async Task<IActionResult> LaboratoriosPaciente(int pacienteId)
         {
@@ -259,7 +333,7 @@ namespace AsilioCabezaAlgodon.Controllers
             return View(examenes);
         }
 
-        // Reporte de medicamentos por paciente
+        // Medicamentos por paciente
         [HttpGet]
         public async Task<IActionResult> MedicamentosPaciente(int pacienteId)
         {
@@ -295,7 +369,7 @@ namespace AsilioCabezaAlgodon.Controllers
             return View(medicamentos);
         }
 
-        // Reporte de consultas con saldos pendientes
+        // Saldos pendientes
         [HttpGet]
         public async Task<IActionResult> SaldosPendientes()
         {
@@ -318,7 +392,7 @@ namespace AsilioCabezaAlgodon.Controllers
             return View(citas);
         }
 
-        // Reporte de historial y análisis médicos
+        // Historial médico
         [HttpGet]
         public async Task<IActionResult> HistorialPaciente(int pacienteId)
         {
@@ -353,8 +427,8 @@ namespace AsilioCabezaAlgodon.Controllers
 
             return View(historial);
         }
-        
-        // Reporte de gastos por cada visita médica
+
+        // Gastos por visita
         [HttpGet]
         public async Task<IActionResult> GastosPorVisita(int pacienteId)
         {

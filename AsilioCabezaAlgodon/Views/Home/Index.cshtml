@@ -16,7 +16,7 @@
     bool verVisitas = administrador || medico || enfermero;
 
     bool verCitas = administrador || recepcionista ||
-                    medico || enfermero;
+                    medico || fundacion;
 
     bool verPagos = administrador || recepcionista ||
                     fundacion;
@@ -32,8 +32,8 @@
     bool verFamiliares = administrador || recepcionista ||
                          medico || enfermero;
 
-    bool verSolicitudes = administrador || recepcionista ||
-                          medico || enfermero;
+    bool verSolicitudes = administrador || medico ||
+                          fundacion;
 
     bool verReportes = administrador;
 }
@@ -61,7 +61,19 @@
                     </h5>
 
                     <p class="card-text">
-                        Administrar la información de los pacientes.
+                        @if (administrador || recepcionista)
+                        {
+                            <span>
+                                Registrar y consultar la información
+                                de los pacientes.
+                            </span>
+                        }
+                        else
+                        {
+                            <span>
+                                Consultar la información de los pacientes.
+                            </span>
+                        }
                     </p>
 
                     <a asp-controller="Paciente"
@@ -85,7 +97,8 @@
                     </h5>
 
                     <p class="card-text">
-                        Consultas, visitas médicas y diagnósticos.
+                        Consultar citas y visitas médicas
+                        según los permisos del usuario.
                     </p>
 
                     @if (verVisitas)
@@ -121,7 +134,8 @@
                     </h5>
 
                     <p class="card-text">
-                        Administrar pagos y donaciones.
+                        Consultar pagos y donaciones
+                        según los permisos del usuario.
                     </p>
 
                     @if (verPagos)
@@ -229,8 +243,20 @@
                     </h5>
 
                     <p class="card-text">
-                        Registrar y consultar los familiares
-                        de los pacientes del asilo.
+                        @if (administrador || recepcionista)
+                        {
+                            <span>
+                                Registrar y consultar los familiares
+                                de los pacientes del asilo.
+                            </span>
+                        }
+                        else
+                        {
+                            <span>
+                                Consultar los familiares
+                                de los pacientes del asilo.
+                            </span>
+                        }
                     </p>
 
                     <a asp-controller="Familiar"
@@ -254,8 +280,19 @@
                     </h5>
 
                     <p class="card-text">
-                        Consultar solicitudes y programar
-                        citas con especialistas.
+                        @if (fundacion && !administrador)
+                        {
+                            <span>
+                                Consultar solicitudes médicas
+                                y programar citas con especialistas.
+                            </span>
+                        }
+                        else
+                        {
+                            <span>
+                                Consultar y registrar solicitudes médicas.
+                            </span>
+                        }
                     </p>
 
                     <a asp-controller="SolicitudMedica"

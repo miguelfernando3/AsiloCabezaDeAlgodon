@@ -1,0 +1,70 @@
+
+@model List<AsilioCabezaAlgodon.Entidades.Paciente>
+
+@{
+    ViewData["Title"] = "Historial médico";
+}
+
+<div class="container mt-4">
+
+    <h2>Historial médico</h2>
+
+    <p>
+        Seleccione un paciente para consultar
+        o editar su historial médico.
+    </p>
+
+    <hr />
+
+    <table class="table table-bordered table-striped">
+
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var paciente in Model)
+            {
+                <tr>
+                    <td>@paciente.Nombre</td>
+                    <td>@paciente.Apellido</td>
+
+                    <td>
+                        <a asp-controller="Paciente"
+                           asp-action="Historial"
+                           asp-route-id="@paciente.Id"
+                           class="btn btn-info btn-sm">
+                            Ver historial
+                        </a>
+
+                        <a asp-controller="HistorialMedico"
+                           asp-action="Editar"
+                           asp-route-pacienteId="@paciente.Id"
+                           class="btn btn-primary btn-sm">
+                            Editar historial
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            No hay pacientes registrados.
+        </div>
+    }
+
+    <a asp-controller="Home"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Volver al inicio
+    </a>
+
+</div>

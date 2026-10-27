@@ -1,135 +1,236 @@
 
 @model List<AsilioCabezaAlgodon.Entidades.Pago>
+@using AsilioCabezaAlgodon.Entidades
 
 @{
     ViewData["Title"] = "Reporte de Cobros";
-
     DateTime fechaInicio = ViewBag.FechaInicio;
     DateTime fechaFin = ViewBag.FechaFin;
+    int? pacienteId = ViewBag.PacienteId;
 
-    var nombresPacientes =
-        ViewBag.NombresPacientes as Dictionary<int, string>
+    var nombres = ViewBag.NombresPacientes as Dictionary<int, string>
         ?? new Dictionary<int, string>();
+
+    var citas = ViewBag.CitasDetalle as List<CitaMedica>
+        ?? new List<CitaMedica>();
+
+    var examenes = ViewBag.ExamenesDetalle as List<ExamenLaboratorio>
+        ?? new List<ExamenLaboratorio>();
+
+    var medicamentos = ViewBag.MedicamentosDetalle as List<Medicamento>
+        ?? new List<Medicamento>();
 
     decimal totalCobrado = ViewBag.TotalCobrado;
     int cantidadPagos = ViewBag.CantidadPagos;
+    decimal totalConsultas = ViewBag.TotalConsultas;
+    decimal totalLaboratorio = ViewBag.TotalLaboratorio;
+    decimal totalMedicamentos = ViewBag.TotalMedicamentos;
+    decimal totalGastosMedicos = ViewBag.TotalGastosMedicos;
 }
 
-<h2>Reporte de Cobros</h2>
+<div class="container mt-4">
+    <h2>Reporte de cobros por paciente y fechas</h2>
 
-<p>
-    Consulte los pagos registrados en el asilo
-    durante un período determinado.
-</p>
+    <p>
+        Consulte los pagos y gastos médicos registrados
+        durante un período.
+    </p>
 
-<form asp-controller="Reporte"
-      asp-action="Cobros"
-      method="get">
+    <form asp-controller="Reporte"
+          asp-action="Cobros" method="get">
 
-    <div class="row">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Paciente</label>
+                <select name="pacienteId"
+                        asp-items="ViewBag.ListaPacientes"
+                        class="form-select">
+                    <option value="">Todos los pacientes</option>
+                </select>
+            </div>
 
-        <div class="col-md-4 mb-3">
-            <label class="form-label">
-                Fecha inicial
-            </label>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Fecha inicial</label>
+                <input type="date" name="fechaInicio"
+                       value="@fechaInicio.ToString("yyyy-MM-dd")"
+                       class="form-control" required />
+            </div>
 
-            <input type="date"
-                   name="fechaInicio"
-                   value="@fechaInicio.ToString("yyyy-MM-dd")"
-                   class="form-control"
-                   required />
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Fecha final</label>
+                <input type="date" name="fechaFin"
+                       value="@fechaFin.ToString("yyyy-MM-dd")"
+                       class="form-control" required />
+            </div>
+
+            <div class="col-md-2 mb-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">
+                    Consultar
+                </button>
+            </div>
         </div>
+    </form>
 
-        <div class="col-md-4 mb-3">
-            <label class="form-label">
-                Fecha final
-            </label>
+    <div asp-validation-summary="All"
+         class="text-danger"></div>
 
-            <input type="date"
-                   name="fechaFin"
-                   value="@fechaFin.ToString("yyyy-MM-dd")"
-                   class="form-control"
-                   required />
-        </div>
+    <hr />
 
-        <div class="col-md-4 mb-3 d-flex align-items-end">
-            <button type="submit"
-                    class="btn btn-primary">
-                Consultar cobros
-            </button>
-        </div>
+    <p>
+        <strong>Período:</strong>
+        @fechaInicio.ToString("dd/MM/yyyy")
+        al @fechaFin.ToString("dd/MM/yyyy")
+    </p>
 
-    </div>
+    <h4>Pagos recibidos (@cantidadPagos)</h4>
 
-</form>
-
-<div asp-validation-summary="All"
-     class="text-danger"></div>
-
-<hr />
-
-<h4>Resultados del período</h4>
-
-<p>
-    <strong>Desde:</strong>
-    @fechaInicio.ToString("dd/MM/yyyy")
-
-    <strong>Hasta:</strong>
-    @fechaFin.ToString("dd/MM/yyyy")
-</p>
-
-<p>
-    <strong>Cantidad de pagos:</strong>
-    @cantidadPagos
-</p>
-
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Fecha</th>
-            <th>Paciente</th>
-            <th>Concepto</th>
-            <th>Monto</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        @foreach (var pago in Model)
-        {
-            string nombrePaciente = nombresPacientes.ContainsKey(pago.PacienteId)
-                ? nombresPacientes[pago.PacienteId]
-                : "Paciente no disponible";
-
+    <table class="table table-bordered table-striped">
+        <thead>
             <tr>
-                <td>@pago.Fecha.ToString("dd/MM/yyyy")</td>
-                <td>@nombrePaciente</td>
-                <td>@pago.Concepto</td>
-                <td>Q @pago.Monto.ToString("N2")</td>
+                <th>Fecha</th>
+                <th>Paciente</th>
+                <th>Concepto</th>
+                <th>Monto</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var pago in Model)
+            {
+                string nombre = nombres.ContainsKey(pago.PacienteId)
+                    ? nombres[pago.PacienteId]
+                    : "Paciente no disponible";
 
-@if (Model.Count == 0 && ViewData.ModelState.IsValid)
-{
-    <div class="alert alert-info">
-        No se encontraron pagos en este período.
-    </div>
-}
+                <tr>
+                    <td>@pago.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@nombre</td>
+                    <td>@pago.Concepto</td>
+                    <td>Q @pago.Monto.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
-<hr />
+    @if (Model.Count == 0 && ViewData.ModelState.IsValid)
+    {
+        <p>No se encontraron pagos en este período.</p>
+    }
 
-<h3>
-    Total cobrado: Q @totalCobrado.ToString("N2")
-</h3>
+    <h4>Total cobrado: Q @totalCobrado.ToString("N2")</h4>
 
-<p class="text-muted">
-    Este reporte incluye únicamente los pagos registrados.
-    No incluye donaciones ni saldos pendientes.
-</p>
+    <hr />
 
-<a asp-controller="Reporte"
-   asp-action="Index"
-   class="btn btn-secondary">
-    Volver a reportes
-</a>
+    <h4>Detalle de gastos médicos</h4>
+
+    <h5>Consultas médicas</h5>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Paciente</th>
+                <th>Cita</th>
+                <th>Costo con descuento</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cita in citas)
+            {
+                string nombre = nombres.ContainsKey(cita.PacienteId)
+                    ? nombres[cita.PacienteId]
+                    : "Paciente no disponible";
+
+                decimal costo = Math.Max(
+                    0m, cita.CostoConsulta - cita.Descuento);
+
+                <tr>
+                    <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@nombre</td>
+                    <td>@cita.Id</td>
+                    <td>Q @costo.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p>
+        <strong>Total consultas:</strong>
+        Q @totalConsultas.ToString("N2")
+    </p>
+
+    <h5>Exámenes de laboratorio</h5>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Visita</th>
+                <th>Costo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var examen in examenes)
+            {
+                <tr>
+                    <td>@examen.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@examen.VisitaMedicaId</td>
+                    <td>Q @examen.Costo.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p>
+        <strong>Total laboratorio:</strong>
+        Q @totalLaboratorio.ToString("N2")
+    </p>
+
+    <h5>Medicamentos despachados</h5>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Visita</th>
+                <th>Costo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var medicamento in medicamentos)
+            {
+                <tr>
+                    <td>@medicamento.VisitaMedicaId</td>
+                    <td>Q @medicamento.Costo.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p>
+        <strong>Total medicamentos:</strong>
+        Q @totalMedicamentos.ToString("N2")
+    </p>
+
+    <h4>
+        Total gastos médicos:
+        Q @totalGastosMedicos.ToString("N2")
+    </h4>
+
+    <p class="text-muted">
+        Los cobros son pagos registrados; los gastos médicos
+        son costos y no necesariamente están pagados.
+        Las consultas se filtran por fecha de cita,
+        los exámenes por fecha del examen y los medicamentos
+        por fecha de visita. No incluye donaciones.
+    </p>
+
+    <button type="button"
+            class="btn btn-primary"
+            onclick="window.print()">
+        Imprimir
+    </button>
+
+    <a asp-controller="Reporte"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Volver a reportes
+    </a>
+</div>

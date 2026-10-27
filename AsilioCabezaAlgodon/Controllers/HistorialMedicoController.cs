@@ -17,6 +17,18 @@ namespace AsilioCabezaAlgodon.Controllers
             _context = context;
         }
 
+        // Mostrar la lista de pacientes
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var pacientes = await _context.Pacientes
+                .OrderBy(p => p.Nombre)
+                .ThenBy(p => p.Apellido)
+                .ToListAsync();
+
+            return View(pacientes);
+        }
+
         // Mostrar formulario para registrar o editar el historial
         [HttpGet]
         public async Task<IActionResult> Editar(int pacienteId)
@@ -40,7 +52,8 @@ namespace AsilioCabezaAlgodon.Controllers
                 };
             }
 
-            ViewBag.NombrePaciente = paciente.Nombre + " " + paciente.Apellido;
+            ViewBag.NombrePaciente =
+                paciente.Nombre + " " + paciente.Apellido;
 
             return View(historial);
         }
@@ -60,7 +73,9 @@ namespace AsilioCabezaAlgodon.Controllers
 
             if (!ModelState.IsValid)
             {
-                ViewBag.NombrePaciente = paciente.Nombre + " " + paciente.Apellido;
+                ViewBag.NombrePaciente =
+                    paciente.Nombre + " " + paciente.Apellido;
+
                 return View(datos);
             }
 
@@ -88,7 +103,8 @@ namespace AsilioCabezaAlgodon.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["Mensaje"] = "Historial médico guardado correctamente.";
+            TempData["Mensaje"] =
+                "Historial médico guardado correctamente.";
 
             return RedirectToAction(
                 "Historial",
