@@ -1,0 +1,59 @@
+
+@model List<AsilioCabezaAlgodon.Entidades.GastoFundacion>
+
+@{
+    ViewData["Title"] = "Gastos de la Fundación";
+    decimal totalGastos = Model.Sum(g => g.Monto);
+}
+
+<div class="container mt-4">
+
+    <h2>Gastos de la Fundación</h2>
+
+    <p>Listado de gastos registrados por la fundación.</p>
+
+    <a asp-controller="GastoFundacion"
+       asp-action="Create"
+       class="btn btn-primary mb-3">
+        Registrar Gasto
+    </a>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Descripción</th>
+                <th>Monto (Q)</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var gasto in Model)
+            {
+                <tr>
+                    <td>@gasto.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@gasto.Concepto</td>
+                    <td>@gasto.Descripcion</td>
+                    <td>Q @gasto.Monto.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            Todavía no hay gastos registrados.
+        </div>
+    }
+
+    <h4>Total de gastos: Q @totalGastos.ToString("N2")</h4>
+
+    <a asp-controller="Home"
+       asp-action="Index"
+       class="btn btn-secondary mt-3">
+        Volver al inicio
+    </a>
+
+</div>
