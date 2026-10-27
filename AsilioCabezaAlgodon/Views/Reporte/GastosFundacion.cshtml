@@ -1,0 +1,62 @@
+
+@model List<AsilioCabezaAlgodon.Entidades.GastoFundacion>
+
+@{
+    ViewData["Title"] = "Reporte de Gastos de la Fundación";
+
+    decimal totalGastos = ViewBag.TotalGastos;
+}
+
+<div class="container mt-4">
+
+    <h2>Reporte de Gastos de la Fundación</h2>
+
+    <p>
+        Gastos realizados por la fundación para
+        el funcionamiento del asilo.
+    </p>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Descripción</th>
+                <th>Monto (Q)</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var gasto in Model)
+            {
+                <tr>
+                    <td>@gasto.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@gasto.Concepto</td>
+                    <td>@gasto.Descripcion</td>
+                    <td>Q @gasto.Monto.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            No hay gastos registrados.
+        </div>
+    }
+
+    <hr />
+
+    <h3>
+        Total de gastos:
+        Q @totalGastos.ToString("N2")
+    </h3>
+
+    <a asp-controller="Reporte"
+       asp-action="Index"
+       class="btn btn-secondary mt-3">
+        Volver a reportes
+    </a>
+
+</div>

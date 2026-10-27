@@ -6,128 +6,212 @@
 
     var listaPacientes =
         ViewBag.ListaPacientes as SelectList;
+
+    decimal totalPagos = ViewBag.TotalPagos;
+    decimal totalDonaciones = ViewBag.TotalDonaciones;
+    decimal totalGastos = ViewBag.TotalGastosFundacion;
+    decimal totalIngresos = ViewBag.TotalIngresos;
+    decimal balance = ViewBag.BalanceFundacion;
 }
 
-<h1>Reportes del Asilo</h1>
+<div class="container mt-4">
 
-<p class="lead">
-    Resumen general de la información registrada en el sistema.
-</p>
+    <h2>Reportes del Asilo</h2>
 
-<div class="row">
+    <p>
+        Resumen general de la información registrada
+        en el sistema.
+    </p>
 
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Pacientes registrados</h5>
-                <h2>@ViewBag.TotalPacientes</h2>
+    <div class="row">
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Pacientes registrados</h5>
+                    <h2>@ViewBag.TotalPacientes</h2>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Citas médicas</h5>
-                <h2>@ViewBag.TotalCitas</h2>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Citas médicas</h5>
+                    <h2>@ViewBag.TotalCitas</h2>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Visitas médicas</h5>
-                <h2>@ViewBag.TotalVisitas</h2>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Visitas médicas</h5>
+                    <h2>@ViewBag.TotalVisitas</h2>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Familiares registrados</h5>
-                <h2>@ViewBag.TotalFamiliares</h2>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Familiares registrados</h5>
+                    <h2>@ViewBag.TotalFamiliares</h2>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Total de pagos</h5>
-                <h2>Q @ViewBag.TotalPagos.ToString("N2")</h2>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Pagos recibidos</h5>
+                    <h2>Q @totalPagos.ToString("N2")</h2>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Total de donaciones</h5>
-                <h2>Q @ViewBag.TotalDonaciones.ToString("N2")</h2>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Donaciones recibidas</h5>
+                    <h2>Q @totalDonaciones.ToString("N2")</h2>
+                </div>
             </div>
         </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Total de ingresos</h5>
+                    <h2>Q @totalIngresos.ToString("N2")</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Gastos de la fundación</h5>
+                    <h2>Q @totalGastos.ToString("N2")</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Balance de la fundación</h5>
+                    <h2>Q @balance.ToString("N2")</h2>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-</div>
+    <hr />
 
-<hr />
+    <h3>Reportes económicos</h3>
 
-<h3>Gastos médicos por paciente</h3>
-
-<p>
-    Seleccione un paciente para consultar los costos
-    de sus consultas médicas, exámenes de laboratorio
-    y medicamentos.
-</p>
-
-<form asp-controller="Reporte"
-      asp-action="GastosPaciente"
-      method="get">
+    <p>
+        Consulte los ingresos, gastos, cobros y
+        saldos pendientes de la fundación.
+    </p>
 
     <div class="mb-3">
-        <label for="pacienteId" class="form-label">
-            Seleccionar paciente
-        </label>
 
-        <select id="pacienteId"
-                name="pacienteId"
-                asp-items="listaPacientes"
-                class="form-select"
-                required>
-            <option value="">
-                Seleccione un paciente
-            </option>
-        </select>
+        <a asp-controller="Reporte"
+           asp-action="Cobros"
+           class="btn btn-primary mb-2">
+            Cobros por fechas
+        </a>
+
+        <a asp-controller="Reporte"
+           asp-action="Ingresos"
+           class="btn btn-primary mb-2">
+            Reporte de ingresos
+        </a>
+
+        <a asp-controller="Reporte"
+           asp-action="GastosFundacion"
+           class="btn btn-primary mb-2">
+            Gastos de la fundación
+        </a>
+
+        <a asp-controller="Reporte"
+           asp-action="SaldosPendientes"
+           class="btn btn-warning mb-2">
+            Saldos pendientes
+        </a>
+
     </div>
 
-    <button type="submit" class="btn btn-primary">
-        Ver gastos médicos
-    </button>
+    <hr />
 
-</form>
+    <h3>Reportes médicos por paciente</h3>
 
-<hr />
+    <p>
+        Seleccione un paciente para consultar sus
+        gastos médicos, gastos por visita, historial,
+        laboratorios o medicamentos.
+    </p>
 
+    <form asp-controller="Reporte"
+          asp-action="GastosPaciente"
+          method="get">
 
-<h3>Reporte de cobros por fechas</h3>
+        <div class="mb-3">
+            <label for="pacienteId" class="form-label">
+                Seleccionar paciente
+            </label>
 
-<p>
-    Consulte los pagos recibidos por el asilo
-    durante un período determinado.
-</p>
+            <select id="pacienteId"
+                    name="pacienteId"
+                    asp-items="listaPacientes"
+                    class="form-select"
+                    required>
+                <option value="">
+                    Seleccione un paciente
+                </option>
+            </select>
+        </div>
 
-<a asp-controller="Reporte"
-   asp-action="Cobros"
-   class="btn btn-primary mb-3">
-    Ver reporte de cobros
-</a>
+        <button type="submit"
+                class="btn btn-primary mb-2">
+            Ver gastos médicos
+        </button>
 
-<hr />
+        <button type="submit"
+                formaction="@Url.Action("GastosPorVisita", "Reporte")"
+                class="btn btn-primary mb-2">
+            Ver gastos por visita
+        </button>
 
-<a asp-controller="Home"
-   asp-action="Index"
-   class="btn btn-secondary">
-    Volver al inicio
-</a>
+        <button type="submit"
+                formaction="@Url.Action("HistorialPaciente", "Reporte")"
+                class="btn btn-success mb-2">
+            Ver historial médico
+        </button>
+
+        <button type="submit"
+                formaction="@Url.Action("LaboratoriosPaciente", "Reporte")"
+                class="btn btn-primary mb-2">
+            Ver laboratorios
+        </button>
+
+        <button type="submit"
+                formaction="@Url.Action("MedicamentosPaciente", "Reporte")"
+                class="btn btn-primary mb-2">
+            Ver medicamentos
+        </button>
+
+    </form>
+
+    <hr />
+
+    <a asp-controller="Home"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Volver al inicio
+    </a>
+
+</div>

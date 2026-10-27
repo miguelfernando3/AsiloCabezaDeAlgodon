@@ -1,0 +1,91 @@
+
+@model List<AsilioCabezaAlgodon.Entidades.CitaMedica>
+
+@{
+    ViewData["Title"] = "Saldos Pendientes";
+
+    var nombresPacientes =
+        ViewBag.NombresPacientes as Dictionary<int, string>
+        ?? new Dictionary<int, string>();
+
+    decimal totalPendiente = ViewBag.TotalPendiente;
+}
+
+<div class="container mt-4">
+
+    <h2>Reporte de Saldos Pendientes</h2>
+
+    <p>
+        Consultas médicas que todavía tienen
+        dinero pendiente de cobrar.
+    </p>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Paciente</th>
+                <th>Fecha</th>
+                <th>Motivo</th>
+                <th>Total (Q)</th>
+                <th>Abonado (Q)</th>
+                <th>Saldo (Q)</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var cita in Model)
+            {
+                decimal total = Math.Max(
+                    0m, cita.CostoConsulta - cita.Descuento);
+
+                decimal saldo = Math.Max(
+                    0m, total - cita.MontoPagado);
+
+                string nombrePaciente =
+                    nombresPacientes.ContainsKey(cita.PacienteId)
+                    ? nombresPacientes[cita.PacienteId]
+                    : "Paciente no disponible";
+
+                <tr>
+                    <td>@nombrePaciente</td>
+                    <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@cita.Motivo</td>
+                    <td>Q @total.ToString("N2")</td>
+                    <td>Q @cita.MontoPagado.ToString("N2")</td>
+                    <td class="text-danger">
+                        <strong>Q @saldo.ToString("N2")</strong>
+                    </td>
+                    <td>@cita.EstadoPago</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-success">
+            No hay consultas con saldos pendientes.
+        </div>
+    }
+
+    <hr />
+
+    <h3>
+        Total pendiente de cobrar:
+        Q @totalPendiente.ToString("N2")
+    </h3>
+
+    <p class="text-muted">
+        Este reporte incluye únicamente saldos de
+        consultas médicas. No incluye mensualidades
+        ni otros servicios.
+    </p>
+
+    <a asp-controller="Reporte"
+       asp-action="Index"
+       class="btn btn-secondary mt-3">
+        Volver a reportes
+    </a>
+
+</div>

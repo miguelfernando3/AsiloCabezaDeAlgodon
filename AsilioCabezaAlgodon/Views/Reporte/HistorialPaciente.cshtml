@@ -1,0 +1,110 @@
+
+@model AsilioCabezaAlgodon.Entidades.HistorialMedico
+
+@using AsilioCabezaAlgodon.Entidades
+
+@{
+    ViewData["Title"] = "Reporte de Historial Médico";
+
+    var paciente = ViewBag.Paciente as Paciente;
+
+    var medicamentos = ViewBag.Medicamentos
+        as List<Medicamento> ?? new List<Medicamento>();
+}
+
+<div class="container mt-4">
+
+    <h2>Reporte de Historial Médico</h2>
+    <p>Información médica del paciente del asilo.</p>
+
+    @if (paciente != null)
+    {
+        <h4>Paciente: @paciente.Nombre @paciente.Apellido</h4>
+    }
+
+    <hr />
+
+    @if (Model == null)
+    {
+        <div class="alert alert-warning">
+            Este paciente todavía no tiene un historial médico registrado.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered">
+            <tbody>
+                <tr>
+                    <th>Fecha de registro</th>
+                    <td>@Model.FechaRegistro.ToString("dd/MM/yyyy")</td>
+                </tr>
+                <tr>
+                    <th>Motivo de ingreso</th>
+                    <td>@Model.MotivoIngreso</td>
+                </tr>
+                <tr>
+                    <th>Antecedentes médicos</th>
+                    <td>@Model.AntecedentesMedicos</td>
+                </tr>
+                <tr>
+                    <th>Enfermedades crónicas</th>
+                    <td>@Model.EnfermedadesCronicas</td>
+                </tr>
+                <tr>
+                    <th>Alergias</th>
+                    <td>@Model.Alergias</td>
+                </tr>
+                <tr>
+                    <th>Psicopatologías</th>
+                    <td>@Model.Psicopatologias</td>
+                </tr>
+                <tr>
+                    <th>Medicamentos habituales</th>
+                    <td>@Model.MedicamentosHabituales</td>
+                </tr>
+                <tr>
+                    <th>Observaciones</th>
+                    <td>@Model.Observaciones</td>
+                </tr>
+            </tbody>
+        </table>
+    }
+
+    <h4 class="mt-4">Medicamentos registrados en visitas médicas</h4>
+
+    @if (medicamentos.Count == 0)
+    {
+        <div class="alert alert-info">
+            No hay medicamentos registrados en las visitas médicas.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            Se encontraron @medicamentos.Count registros de medicamentos.
+            Incluye medicamentos pendientes y despachados.
+        </div>
+
+        <a asp-controller="Reporte"
+           asp-action="MedicamentosPaciente"
+           asp-route-pacienteId="@paciente?.Id"
+           class="btn btn-outline-primary mb-3">
+            Ver detalle de medicamentos
+        </a>
+    }
+
+    <div class="mt-3">
+        <button type="button"
+                onclick="window.print()"
+                class="btn btn-primary">
+            Imprimir reporte
+        </button>
+
+        <a asp-controller="Reporte"
+           asp-action="Index"
+           class="btn btn-secondary">
+            Volver a reportes
+        </a>
+    </div>
+
+</div>

@@ -1,0 +1,100 @@
+
+@using AsilioCabezaAlgodon.Entidades
+
+@{
+    ViewData["Title"] = "Reporte de Ingresos";
+
+    var pagos = ViewBag.Pagos as List<Pago>
+        ?? new List<Pago>();
+
+    var donaciones = ViewBag.Donaciones as List<Donacion>
+        ?? new List<Donacion>();
+
+    decimal totalPagos = ViewBag.TotalPagos;
+    decimal totalDonaciones = ViewBag.TotalDonaciones;
+    decimal totalIngresos = ViewBag.TotalIngresos;
+}
+
+<div class="container mt-4">
+
+    <h2>Reporte de Ingresos</h2>
+
+    <p>
+        Ingresos recibidos por pagos de pacientes
+        y donaciones a la fundación.
+    </p>
+
+    <h4>Pagos de pacientes</h4>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Monto (Q)</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var pago in pagos)
+            {
+                <tr>
+                    <td>@pago.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@pago.Concepto</td>
+                    <td>Q @pago.Monto.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p>
+        <strong>Total de pagos:</strong>
+        Q @totalPagos.ToString("N2")
+    </p>
+
+    <hr />
+
+    <h4>Donaciones recibidas</h4>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Donante</th>
+                <th>Descripción</th>
+                <th>Monto (Q)</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var donacion in donaciones)
+            {
+                <tr>
+                    <td>@donacion.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@donacion.Donante</td>
+                    <td>@donacion.Descripcion</td>
+                    <td>Q @donacion.Monto.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p>
+        <strong>Total de donaciones:</strong>
+        Q @totalDonaciones.ToString("N2")
+    </p>
+
+    <hr />
+
+    <h3>
+        Total de ingresos:
+        Q @totalIngresos.ToString("N2")
+    </h3>
+
+    <a asp-controller="Reporte"
+       asp-action="Index"
+       class="btn btn-secondary mt-3">
+        Volver a reportes
+    </a>
+
+</div>

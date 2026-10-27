@@ -1,0 +1,162 @@
+
+@using AsilioCabezaAlgodon.Entidades
+@model List<VisitaMedica>
+
+@{
+    ViewData["Title"] = "Gastos por Visita Médica";
+
+    var paciente = ViewBag.Paciente as Paciente;
+
+    var citas = ViewBag.Citas as List<CitaMedica>
+        ?? new List<CitaMedica>();
+
+    var examenes = ViewBag.Examenes as List<ExamenLaboratorio>
+        ?? new List<ExamenLaboratorio>();
+
+    var medicamentos = ViewBag.Medicamentos as List<Medicamento>
+        ?? new List<Medicamento>();
+
+    decimal totalGeneral = 0m;
+    var citasContadas = new HashSet<int>();
+}
+
+<div class="container mt-4">
+
+    <h2>Reporte de Gastos por Visita Médica</h2>
+
+    <h4>Paciente: @paciente?.Nombre @paciente?.Apellido</h4>
+
+    <hr />
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            Este paciente no tiene visitas médicas registradas.
+        </div>
+    }
+    else
+    {
+        @foreach (var visita in Model)
+        {
+            var cita = citas.FirstOrDefault(c =>
+                c.Id == visita.CitaMedicaId);
+
+            decimal costoConsulta = 0m;
+
+            // La consulta solo se cuenta una vez por cita.
+            if (cita != null &&
+                !citasContadas.Contains(cita.Id))
+            {
+                costoConsulta = Math.Max(0m,
+                    cita.CostoConsulta - cita.Descuento);
+
+                citasContadas.Add(cita.Id);
+            }
+
+            var examenesVisita = examenes
+                .Where(e => e.VisitaMedicaId == visita.Id)
+                .ToList();
+
+            var medicamentosVisita = medicamentos
+                .Where(m => m.VisitaMedicaId == visita.Id &&
+                            m.Estado == "Despachado")
+                .ToList();
+
+            decimal totalLaboratorio =
+                examenesVisita.Sum(e => e.Costo);
+
+            decimal totalMedicamentos =
+                medicamentosVisita.Sum(m => m.Costo);
+
+            decimal totalVisita = costoConsulta +
+                                  totalLaboratorio +
+                                  totalMedicamentos;
+
+            totalGeneral += totalVisita;
+
+            <div class="card mb-4">
+                <div class="card-body">
+
+                    <h5>Visita médica #@visita.Id</h5>
+
+                    <p>
+                        <strong>Fecha:</strong>
+                        @visita.Fecha.ToString("dd/MM/yyyy")
+                    </p>
+
+                    <p>
+                        <strong>Motivo:</strong> @visita.Motivo
+                    </p>
+
+                    <p>
+                        <strong>Diagnóstico:</strong>
+                        @visita.Diagnostico
+                    </p>
+
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Costo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Consulta médica</td>
+                                <td>Q @costoConsulta.ToString("N2")</td>
+                            </tr>
+
+                            @foreach (var examen in examenesVisita)
+                            {
+                                <tr>
+                                    <td>Laboratorio: @examen.NombreExamen</td>
+                                    <td>Q @examen.Costo.ToString("N2")</td>
+                                </tr>
+                            }
+
+                            @foreach (var medicamento in medicamentosVisita)
+                            {
+                                <tr>
+                                    <td>Medicamento: @medicamento.Nombre</td>
+                                    <td>Q @medicamento.Costo.ToString("N2")</td>
+                                </tr>
+                            }
+
+                            <tr class="table-secondary">
+                                <th>Total de la visita</th>
+                                <th>Q @totalVisita.ToString("N2")</th>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        }
+
+        <h4>
+            Total de gastos de las visitas:
+            Q @totalGeneral.ToString("N2")
+        </h4>
+
+        <p class="text-muted">
+            El costo de cada consulta se cuenta una sola vez
+            por cita médica. Los medicamentos pendientes no
+            se incluyen en el total. Los exámenes se incluyen
+            según su costo registrado.
+            Este reporte muestra costos, no necesariamente pagos.
+        </p>
+    }
+
+    <button type="button"
+            onclick="window.print()"
+            class="btn btn-primary">
+        Imprimir reporte
+    </button>
+
+    <a asp-controller="Reporte"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Volver a reportes
+    </a>
+
+</div>
