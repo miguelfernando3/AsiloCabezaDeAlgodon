@@ -1,12 +1,15 @@
 
 @model List<AsilioCabezaAlgodon.Entidades.ExamenLaboratorio>
 @using AsilioCabezaAlgodon.Entidades
+@using System.Linq
 
 @{
     ViewData["Title"] = "Laboratorios por Paciente";
 
     var paciente = ViewBag.Paciente as Paciente;
-    decimal totalLaboratorio = ViewBag.TotalLaboratorio;
+
+    decimal totalLaboratorio = Model.Sum(e =>
+        Math.Max(0m, e.Costo - e.Descuento));
 }
 
 <div class="container mt-4">
@@ -26,17 +29,28 @@
             <tr>
                 <th>Fecha</th>
                 <th>Nombre del examen</th>
-                <th>Costo (Q)</th>
+                <th>Costo original (Q)</th>
+                <th>Descuento (Q)</th>
+                <th>Total a pagar (Q)</th>
             </tr>
         </thead>
 
         <tbody>
             @foreach (var examen in Model)
             {
+                decimal totalExamen = Math.Max(
+                    0m, examen.Costo - examen.Descuento);
+
                 <tr>
                     <td>@examen.Fecha.ToString("dd/MM/yyyy")</td>
                     <td>@examen.NombreExamen</td>
                     <td>Q @examen.Costo.ToString("N2")</td>
+                    <td>Q @examen.Descuento.ToString("N2")</td>
+                    <td>
+                        <strong>
+                            Q @totalExamen.ToString("N2")
+                        </strong>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -57,7 +71,8 @@
     </h3>
 
     <p class="text-muted">
-        Este total representa los costos registrados,
+        El total incluye los descuentos de la fundación.
+        Representa los costos de los exámenes,
         no necesariamente los pagos recibidos.
     </p>
 

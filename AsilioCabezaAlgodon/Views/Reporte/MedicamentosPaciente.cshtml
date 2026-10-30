@@ -1,13 +1,16 @@
 
 @model List<AsilioCabezaAlgodon.Entidades.Medicamento>
 @using AsilioCabezaAlgodon.Entidades
+@using System.Linq
 
 @{
     ViewData["Title"] = "Medicamentos por Paciente";
 
     var paciente = ViewBag.Paciente as Paciente;
 
-    decimal totalMedicamentos = ViewBag.TotalMedicamentos;
+    decimal totalMedicamentos = Model
+        .Where(m => m.Estado == "Despachado")
+        .Sum(m => Math.Max(0m, m.Costo - m.Descuento));
 }
 
 <div class="container mt-4">
@@ -29,19 +32,51 @@
                 <th>Dosis</th>
                 <th>Duración</th>
                 <th>Estado</th>
-                <th>Costo (Q)</th>
+                <th>Costo original (Q)</th>
+                <th>Descuento (Q)</th>
+                <th>Total (Q)</th>
             </tr>
         </thead>
 
         <tbody>
             @foreach (var medicamento in Model)
             {
+                decimal totalMedicamento = Math.Max(
+                    0m, medicamento.Costo - medicamento.Descuento);
+
                 <tr>
                     <td>@medicamento.Nombre</td>
                     <td>@medicamento.Dosis</td>
                     <td>@medicamento.Duracion</td>
-                    <td>@medicamento.Estado</td>
-                    <td>Q @medicamento.Costo.ToString("N2")</td>
+
+                    <td>
+                        @if (medicamento.Estado == "Despachado")
+                        {
+                            <span class="badge bg-success">
+                                Despachado
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">
+                                Pendiente
+                            </span>
+                        }
+                    </td>
+
+                    <td>
+                        Q @medicamento.Costo.ToString("N2")
+                    </td>
+
+                    <td>
+                        Q @medicamento.Descuento.ToString("N2")
+                    </td>
+
+                    <td>
+                        <strong>
+                            Q @totalMedicamento.ToString("N2")
+                        </strong>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -63,8 +98,9 @@
 
     <p class="text-muted">
         El total incluye únicamente medicamentos
-        con estado Despachado.
-        No representa necesariamente dinero pagado.
+        con estado Despachado y aplica los descuentos
+        de la fundación. No representa necesariamente
+        dinero pagado.
     </p>
 
     <a asp-controller="Reporte"

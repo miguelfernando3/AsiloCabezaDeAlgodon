@@ -4,6 +4,7 @@
 
 @{
     ViewData["Title"] = "Reporte de Cobros";
+
     DateTime fechaInicio = ViewBag.FechaInicio;
     DateTime fechaFin = ViewBag.FechaFin;
     int? pacienteId = ViewBag.PacienteId;
@@ -22,6 +23,7 @@
 
     decimal totalCobrado = ViewBag.TotalCobrado;
     int cantidadPagos = ViewBag.CantidadPagos;
+
     decimal totalConsultas = ViewBag.TotalConsultas;
     decimal totalLaboratorio = ViewBag.TotalLaboratorio;
     decimal totalMedicamentos = ViewBag.TotalMedicamentos;
@@ -29,6 +31,7 @@
 }
 
 <div class="container mt-4">
+
     <h2>Reporte de cobros por paciente y fechas</h2>
 
     <p>
@@ -37,11 +40,14 @@
     </p>
 
     <form asp-controller="Reporte"
-          asp-action="Cobros" method="get">
+          asp-action="Cobros"
+          method="get">
 
         <div class="row">
+
             <div class="col-md-4 mb-3">
                 <label class="form-label">Paciente</label>
+
                 <select name="pacienteId"
                         asp-items="ViewBag.ListaPacientes"
                         class="form-select">
@@ -51,16 +57,22 @@
 
             <div class="col-md-3 mb-3">
                 <label class="form-label">Fecha inicial</label>
-                <input type="date" name="fechaInicio"
+
+                <input type="date"
+                       name="fechaInicio"
                        value="@fechaInicio.ToString("yyyy-MM-dd")"
-                       class="form-control" required />
+                       class="form-control"
+                       required />
             </div>
 
             <div class="col-md-3 mb-3">
                 <label class="form-label">Fecha final</label>
-                <input type="date" name="fechaFin"
+
+                <input type="date"
+                       name="fechaFin"
                        value="@fechaFin.ToString("yyyy-MM-dd")"
-                       class="form-control" required />
+                       class="form-control"
+                       required />
             </div>
 
             <div class="col-md-2 mb-3 d-flex align-items-end">
@@ -68,6 +80,7 @@
                     Consultar
                 </button>
             </div>
+
         </div>
     </form>
 
@@ -90,9 +103,10 @@
                 <th>Fecha</th>
                 <th>Paciente</th>
                 <th>Concepto</th>
-                <th>Monto</th>
+                <th>Monto (Q)</th>
             </tr>
         </thead>
+
         <tbody>
             @foreach (var pago in Model)
             {
@@ -112,10 +126,14 @@
 
     @if (Model.Count == 0 && ViewData.ModelState.IsValid)
     {
-        <p>No se encontraron pagos en este período.</p>
+        <p class="text-muted">
+            No se encontraron pagos en este período.
+        </p>
     }
 
-    <h4>Total cobrado: Q @totalCobrado.ToString("N2")</h4>
+    <h4>
+        Total cobrado: Q @totalCobrado.ToString("N2")
+    </h4>
 
     <hr />
 
@@ -129,9 +147,12 @@
                 <th>Fecha</th>
                 <th>Paciente</th>
                 <th>Cita</th>
-                <th>Costo con descuento</th>
+                <th>Costo original (Q)</th>
+                <th>Descuento (Q)</th>
+                <th>Total (Q)</th>
             </tr>
         </thead>
+
         <tbody>
             @foreach (var cita in citas)
             {
@@ -139,23 +160,36 @@
                     ? nombres[cita.PacienteId]
                     : "Paciente no disponible";
 
-                decimal costo = Math.Max(
+                decimal total = Math.Max(
                     0m, cita.CostoConsulta - cita.Descuento);
 
                 <tr>
                     <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
                     <td>@nombre</td>
                     <td>@cita.Id</td>
-                    <td>Q @costo.ToString("N2")</td>
+                    <td>Q @cita.CostoConsulta.ToString("N2")</td>
+                    <td>Q @cita.Descuento.ToString("N2")</td>
+                    <td>
+                        <strong>Q @total.ToString("N2")</strong>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
 
+    @if (citas.Count == 0)
+    {
+        <p class="text-muted">
+            No hay consultas registradas en este período.
+        </p>
+    }
+
     <p>
         <strong>Total consultas:</strong>
         Q @totalConsultas.ToString("N2")
     </p>
+
+    <hr />
 
     <h5>Exámenes de laboratorio</h5>
 
@@ -164,25 +198,46 @@
             <tr>
                 <th>Fecha</th>
                 <th>Visita</th>
-                <th>Costo</th>
+                <th>Examen</th>
+                <th>Costo original (Q)</th>
+                <th>Descuento (Q)</th>
+                <th>Total (Q)</th>
             </tr>
         </thead>
+
         <tbody>
             @foreach (var examen in examenes)
             {
+                decimal total = Math.Max(
+                    0m, examen.Costo - examen.Descuento);
+
                 <tr>
                     <td>@examen.Fecha.ToString("dd/MM/yyyy")</td>
                     <td>@examen.VisitaMedicaId</td>
+                    <td>@examen.NombreExamen</td>
                     <td>Q @examen.Costo.ToString("N2")</td>
+                    <td>Q @examen.Descuento.ToString("N2")</td>
+                    <td>
+                        <strong>Q @total.ToString("N2")</strong>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
 
+    @if (examenes.Count == 0)
+    {
+        <p class="text-muted">
+            No hay exámenes registrados en este período.
+        </p>
+    }
+
     <p>
         <strong>Total laboratorio:</strong>
         Q @totalLaboratorio.ToString("N2")
     </p>
+
+    <hr />
 
     <h5>Medicamentos despachados</h5>
 
@@ -190,24 +245,46 @@
         <thead>
             <tr>
                 <th>Visita</th>
-                <th>Costo</th>
+                <th>Medicamento</th>
+                <th>Costo original (Q)</th>
+                <th>Descuento (Q)</th>
+                <th>Total (Q)</th>
             </tr>
         </thead>
+
         <tbody>
             @foreach (var medicamento in medicamentos)
             {
+                decimal total = Math.Max(
+                    0m, medicamento.Costo - medicamento.Descuento);
+
                 <tr>
                     <td>@medicamento.VisitaMedicaId</td>
+                    <td>@medicamento.Nombre</td>
                     <td>Q @medicamento.Costo.ToString("N2")</td>
+                    <td>Q @medicamento.Descuento.ToString("N2")</td>
+                    <td>
+                        <strong>Q @total.ToString("N2")</strong>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
 
+    @if (medicamentos.Count == 0)
+    {
+        <p class="text-muted">
+            No hay medicamentos despachados
+            correspondientes a este período.
+        </p>
+    }
+
     <p>
         <strong>Total medicamentos:</strong>
         Q @totalMedicamentos.ToString("N2")
     </p>
+
+    <hr />
 
     <h4>
         Total gastos médicos:
@@ -215,8 +292,11 @@
     </h4>
 
     <p class="text-muted">
-        Los cobros son pagos registrados; los gastos médicos
-        son costos y no necesariamente están pagados.
+        Los cobros son pagos registrados.
+        Los gastos médicos son costos después de aplicar
+        los descuentos de la fundación y no necesariamente
+        están pagados.
+
         Las consultas se filtran por fecha de cita,
         los exámenes por fecha del examen y los medicamentos
         por fecha de visita. No incluye donaciones.
@@ -233,4 +313,5 @@
        class="btn btn-secondary">
         Volver a reportes
     </a>
+
 </div>

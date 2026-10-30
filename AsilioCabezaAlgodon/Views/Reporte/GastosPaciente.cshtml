@@ -21,118 +21,168 @@
     decimal totalGeneral = ViewBag.TotalGeneral;
 }
 
-<h2>Reporte de Gastos Médicos</h2>
+<div class="container mt-4">
 
-<h4>
-    Paciente: @paciente?.Nombre @paciente?.Apellido
-</h4>
+    <h2>Reporte de Gastos Médicos</h2>
 
-<hr />
+    <h4>
+        Paciente: @paciente?.Nombre @paciente?.Apellido
+    </h4>
 
-<h5>Consultas médicas</h5>
+    <hr />
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Fecha</th>
-            <th>Motivo</th>
-            <th>Costo</th>
-            <th>Descuento</th>
-            <th>Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var cita in citas)
-        {
-            var total = Math.Max(0m,
-                cita.CostoConsulta - cita.Descuento);
+    <h5>Consultas médicas</h5>
 
+    <table class="table table-bordered table-striped">
+        <thead>
             <tr>
-                <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
-                <td>@cita.Motivo</td>
-                <td>Q @cita.CostoConsulta.ToString("N2")</td>
-                <td>Q @cita.Descuento.ToString("N2")</td>
-                <td>Q @total.ToString("N2")</td>
+                <th>Fecha</th>
+                <th>Motivo</th>
+                <th>Costo original (Q)</th>
+                <th>Descuento (Q)</th>
+                <th>Total (Q)</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
 
-<p>
-    <strong>Total consultas:</strong>
-    Q @totalConsultas.ToString("N2")
-</p>
+        <tbody>
+            @foreach (var cita in citas)
+            {
+                decimal total = Math.Max(
+                    0m, cita.CostoConsulta - cita.Descuento);
 
-<hr />
+                <tr>
+                    <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@cita.Motivo</td>
+                    <td>Q @cita.CostoConsulta.ToString("N2")</td>
+                    <td>Q @cita.Descuento.ToString("N2")</td>
+                    <td>
+                        <strong>Q @total.ToString("N2")</strong>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
-<h5>Exámenes de laboratorio</h5>
+    @if (citas.Count == 0)
+    {
+        <p class="text-muted">
+            No hay consultas médicas registradas.
+        </p>
+    }
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Fecha</th>
-            <th>Examen</th>
-            <th>Costo</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var examen in examenes)
-        {
+    <p>
+        <strong>Total consultas:</strong>
+        Q @totalConsultas.ToString("N2")
+    </p>
+
+    <hr />
+
+    <h5>Exámenes de laboratorio</h5>
+
+    <table class="table table-bordered table-striped">
+        <thead>
             <tr>
-                <td>@examen.Fecha.ToString("dd/MM/yyyy")</td>
-                <td>@examen.NombreExamen</td>
-                <td>Q @examen.Costo.ToString("N2")</td>
+                <th>Fecha</th>
+                <th>Examen</th>
+                <th>Costo original (Q)</th>
+                <th>Descuento (Q)</th>
+                <th>Total (Q)</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
 
-<p>
-    <strong>Total laboratorio:</strong>
-    Q @totalLaboratorio.ToString("N2")
-</p>
+        <tbody>
+            @foreach (var examen in examenes)
+            {
+                decimal total = Math.Max(
+                    0m, examen.Costo - examen.Descuento);
 
-<hr />
+                <tr>
+                    <td>@examen.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@examen.NombreExamen</td>
+                    <td>Q @examen.Costo.ToString("N2")</td>
+                    <td>Q @examen.Descuento.ToString("N2")</td>
+                    <td>
+                        <strong>Q @total.ToString("N2")</strong>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
-<h5>Medicamentos</h5>
+    @if (examenes.Count == 0)
+    {
+        <p class="text-muted">
+            No hay exámenes de laboratorio registrados.
+        </p>
+    }
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Medicamento</th>
-            <th>Costo</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var medicamento in medicamentos)
-        {
+    <p>
+        <strong>Total laboratorio:</strong>
+        Q @totalLaboratorio.ToString("N2")
+    </p>
+
+    <hr />
+
+    <h5>Medicamentos despachados</h5>
+
+    <table class="table table-bordered table-striped">
+        <thead>
             <tr>
-                <td>@medicamento.Nombre</td>
-                <td>Q @medicamento.Costo.ToString("N2")</td>
+                <th>Medicamento</th>
+                <th>Costo original (Q)</th>
+                <th>Descuento (Q)</th>
+                <th>Total (Q)</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
 
-<p>
-    <strong>Total medicamentos:</strong>
-    Q @totalMedicamentos.ToString("N2")
-</p>
+        <tbody>
+            @foreach (var medicamento in medicamentos)
+            {
+                decimal total = Math.Max(
+                    0m, medicamento.Costo - medicamento.Descuento);
 
-<hr />
+                <tr>
+                    <td>@medicamento.Nombre</td>
+                    <td>Q @medicamento.Costo.ToString("N2")</td>
+                    <td>Q @medicamento.Descuento.ToString("N2")</td>
+                    <td>
+                        <strong>Q @total.ToString("N2")</strong>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
-<h4>
-    Total general de gastos:
-    Q @totalGeneral.ToString("N2")
-</h4>
+    @if (medicamentos.Count == 0)
+    {
+        <p class="text-muted">
+            No hay medicamentos despachados.
+        </p>
+    }
 
-<p class="text-muted">
-    Este reporte muestra los costos médicos registrados.
-    No representa necesariamente el dinero pagado.
-</p>
+    <p>
+        <strong>Total medicamentos:</strong>
+        Q @totalMedicamentos.ToString("N2")
+    </p>
 
-<a asp-controller="Reporte"
-   asp-action="Index"
-   class="btn btn-secondary">
-    Volver a reportes
-</a>
+    <hr />
+
+    <h4>
+        Total general de gastos:
+        Q @totalGeneral.ToString("N2")
+    </h4>
+
+    <p class="text-muted">
+        Este reporte muestra los costos médicos registrados,
+        aplicando los descuentos de la fundación.
+        En medicamentos se incluyen únicamente los despachados.
+        Los valores no representan necesariamente el dinero pagado.
+    </p>
+
+    <a asp-controller="Reporte"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Volver a reportes
+    </a>
+
+</div>
