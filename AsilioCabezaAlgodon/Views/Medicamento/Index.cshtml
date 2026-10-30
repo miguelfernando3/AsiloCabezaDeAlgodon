@@ -58,7 +58,9 @@
                     <th>Dosis</th>
                     <th>Duración</th>
                     <th>Estado</th>
-                    <th>Costo (Q)</th>
+                    <th>Costo original (Q)</th>
+                    <th>Descuento (Q)</th>
+                    <th>Total a pagar (Q)</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -96,6 +98,14 @@
                     bool pendiente =
                         medicamento.Estado == "Pendiente";
 
+                    decimal totalPagar =
+                        medicamento.Costo - medicamento.Descuento;
+
+                    if (totalPagar < 0)
+                    {
+                        totalPagar = 0;
+                    }
+
                     <tr>
                         <td>@nombrePaciente</td>
 
@@ -128,6 +138,16 @@
 
                         <td>
                             Q @medicamento.Costo.ToString("N2")
+                        </td>
+
+                        <td>
+                            Q @medicamento.Descuento.ToString("N2")
+                        </td>
+
+                        <td>
+                            <strong>
+                                Q @totalPagar.ToString("N2")
+                            </strong>
                         </td>
 
                         <td>

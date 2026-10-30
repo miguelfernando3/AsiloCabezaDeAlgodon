@@ -1,3 +1,4 @@
+
 using System;
 
 namespace AsilioCabezaAlgodon.Entidades
@@ -14,7 +15,10 @@ namespace AsilioCabezaAlgodon.Entidades
 
         public DateTime Fecha { get; set; }
 
-        // Costo del examen de laboratorio
+        // Precio original del examen
         public decimal Costo { get; set; } = 0;
+
+        // Descuento proporcionado por la fundación
+        public decimal Descuento { get; set; } = 0;
     }
 }

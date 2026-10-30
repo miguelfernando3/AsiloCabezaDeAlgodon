@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AsilioCabezaAlgodon.Datos;
 using AsilioCabezaAlgodon.Entidades;
-using System.ComponentModel.DataAnnotations;
 
 namespace AsilioCabezaAlgodon.Controllers
 {
@@ -50,6 +49,7 @@ namespace AsilioCabezaAlgodon.Controllers
             {
                 Fecha = DateTime.Now,
                 Costo = 0,
+                Descuento = 0,
                 Resultado = ""
             });
         }
@@ -101,6 +101,21 @@ namespace AsilioCabezaAlgodon.Controllers
                 ModelState.AddModelError(
                     nameof(examen.Costo),
                     "El costo no puede ser negativo.");
+            }
+
+            // Validar descuento de la fundación
+            if (examen.Descuento < 0)
+            {
+                ModelState.AddModelError(
+                    nameof(examen.Descuento),
+                    "El descuento no puede ser negativo.");
+            }
+
+            if (examen.Descuento > examen.Costo)
+            {
+                ModelState.AddModelError(
+                    nameof(examen.Descuento),
+                    "El descuento no puede superar el costo del examen.");
             }
 
             if (!ModelState.IsValid)
@@ -185,8 +200,6 @@ namespace AsilioCabezaAlgodon.Controllers
                 return View(examen);
             }
 
-            // Actualización condicional:
-            // evita sobrescribir un resultado ya guardado
             int actualizados = await _context.ExamenesLaboratorio
                 .Where(e => e.Id == id &&
                     (e.Resultado == null || e.Resultado == ""))

@@ -13,7 +13,11 @@ namespace AsilioCabezaAlgodon.Entidades
 
         public string Duracion { get; set; } = "";
 
-        public decimal Costo { get; set; }
+        // Precio original del medicamento
+        public decimal Costo { get; set; } = 0;
+
+        // Descuento de la fundación
+        public decimal Descuento { get; set; } = 0;
 
         // Relación con la visita médica
         public int? VisitaMedicaId { get; set; }

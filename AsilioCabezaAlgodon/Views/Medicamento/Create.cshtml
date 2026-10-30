@@ -87,7 +87,7 @@
 
         <div class="mb-3">
             <label asp-for="Costo" class="form-label">
-                Costo (Q)
+                Costo original (Q)
             </label>
 
             <input asp-for="Costo"
@@ -99,6 +99,26 @@
 
             <span asp-validation-for="Costo"
                   class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Descuento" class="form-label">
+                Descuento de la fundación (Q)
+            </label>
+
+            <input asp-for="Descuento"
+                   type="number"
+                   step="0.01"
+                   min="0"
+                   class="form-control"
+                   required />
+
+            <span asp-validation-for="Descuento"
+                  class="text-danger"></span>
+
+            <small class="text-muted">
+                Si no hay descuento, ingrese 0.
+            </small>
         </div>
 
         <div class="alert alert-info">

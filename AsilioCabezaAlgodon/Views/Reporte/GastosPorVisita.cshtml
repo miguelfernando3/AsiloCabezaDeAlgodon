@@ -43,11 +43,12 @@
 
             decimal costoConsulta = 0m;
 
-            // La consulta solo se cuenta una vez por cita.
+            // Contar la consulta una sola vez por cita
             if (cita != null &&
                 !citasContadas.Contains(cita.Id))
             {
-                costoConsulta = Math.Max(0m,
+                costoConsulta = Math.Max(
+                    0m,
                     cita.CostoConsulta - cita.Descuento);
 
                 citasContadas.Add(cita.Id);
@@ -58,19 +59,23 @@
                 .ToList();
 
             var medicamentosVisita = medicamentos
-                .Where(m => m.VisitaMedicaId == visita.Id &&
-                            m.Estado == "Despachado")
+                .Where(m =>
+                    m.VisitaMedicaId == visita.Id &&
+                    m.Estado == "Despachado")
                 .ToList();
 
-            decimal totalLaboratorio =
-                examenesVisita.Sum(e => e.Costo);
+            // Total de laboratorio con descuentos
+            decimal totalLaboratorio = examenesVisita.Sum(e =>
+                Math.Max(0m, e.Costo - e.Descuento));
 
-            decimal totalMedicamentos =
-                medicamentosVisita.Sum(m => m.Costo);
+            // Total de medicamentos con descuentos
+            decimal totalMedicamentos = medicamentosVisita.Sum(m =>
+                Math.Max(0m, m.Costo - m.Descuento));
 
-            decimal totalVisita = costoConsulta +
-                                  totalLaboratorio +
-                                  totalMedicamentos;
+            decimal totalVisita =
+                costoConsulta +
+                totalLaboratorio +
+                totalMedicamentos;
 
             totalGeneral += totalVisita;
 
@@ -94,37 +99,107 @@
                     </p>
 
                     <table class="table table-bordered">
-                        <thead>
+                        <thead class="table-dark">
                             <tr>
                                 <th>Concepto</th>
-                                <th>Costo</th>
+                                <th>Costo original (Q)</th>
+                                <th>Descuento (Q)</th>
+                                <th>Total (Q)</th>
                             </tr>
                         </thead>
+
                         <tbody>
-                            <tr>
-                                <td>Consulta médica</td>
-                                <td>Q @costoConsulta.ToString("N2")</td>
-                            </tr>
+                            @if (cita != null &&
+                                 costoConsulta > 0)
+                            {
+                                <tr>
+                                    <td>Consulta médica</td>
+                                    <td>
+                                        Q @cita.CostoConsulta.ToString("N2")
+                                    </td>
+                                    <td>
+                                        Q @cita.Descuento.ToString("N2")
+                                    </td>
+                                    <td>
+                                        <strong>
+                                            Q @costoConsulta.ToString("N2")
+                                        </strong>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td>Consulta médica</td>
+                                    <td colspan="3">
+                                        Sin cargo adicional en esta visita
+                                    </td>
+                                </tr>
+                            }
 
                             @foreach (var examen in examenesVisita)
                             {
+                                decimal totalExamen = Math.Max(
+                                    0m,
+                                    examen.Costo - examen.Descuento);
+
                                 <tr>
-                                    <td>Laboratorio: @examen.NombreExamen</td>
-                                    <td>Q @examen.Costo.ToString("N2")</td>
+                                    <td>
+                                        Laboratorio: @examen.NombreExamen
+                                    </td>
+
+                                    <td>
+                                        Q @examen.Costo.ToString("N2")
+                                    </td>
+
+                                    <td>
+                                        Q @examen.Descuento.ToString("N2")
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            Q @totalExamen.ToString("N2")
+                                        </strong>
+                                    </td>
                                 </tr>
                             }
 
                             @foreach (var medicamento in medicamentosVisita)
                             {
+                                decimal totalMedicamento = Math.Max(
+                                    0m,
+                                    medicamento.Costo -
+                                    medicamento.Descuento);
+
                                 <tr>
-                                    <td>Medicamento: @medicamento.Nombre</td>
-                                    <td>Q @medicamento.Costo.ToString("N2")</td>
+                                    <td>
+                                        Medicamento: @medicamento.Nombre
+                                    </td>
+
+                                    <td>
+                                        Q @medicamento.Costo.ToString("N2")
+                                    </td>
+
+                                    <td>
+                                        Q @medicamento.Descuento.ToString("N2")
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            Q @totalMedicamento.ToString("N2")
+                                        </strong>
+                                    </td>
                                 </tr>
                             }
 
                             <tr class="table-secondary">
-                                <th>Total de la visita</th>
-                                <th>Q @totalVisita.ToString("N2")</th>
+                                <th colspan="3">
+                                    Total de la visita
+                                </th>
+
+                                <th>
+                                    Q @totalVisita.ToString("N2")
+                                </th>
                             </tr>
                         </tbody>
                     </table>
@@ -141,8 +216,8 @@
         <p class="text-muted">
             El costo de cada consulta se cuenta una sola vez
             por cita médica. Los medicamentos pendientes no
-            se incluyen en el total. Los exámenes se incluyen
-            según su costo registrado.
+            se incluyen en el total. Los costos de laboratorio
+            y medicamentos incluyen los descuentos de la fundación.
             Este reporte muestra costos, no necesariamente pagos.
         </p>
     }

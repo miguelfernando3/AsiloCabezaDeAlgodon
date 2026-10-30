@@ -53,7 +53,8 @@ namespace AsilioCabezaAlgodon.Controllers
             return View(new Medicamento
             {
                 Estado = "Pendiente",
-                Costo = 0
+                Costo = 0,
+                Descuento = 0
             });
         }
 
@@ -108,6 +109,7 @@ namespace AsilioCabezaAlgodon.Controllers
                     "La duración no puede superar 200 caracteres.");
             }
 
+            // Validar costo
             if (medicamento.Costo < 0)
             {
                 ModelState.AddModelError(
@@ -115,6 +117,22 @@ namespace AsilioCabezaAlgodon.Controllers
                     "El costo no puede ser negativo.");
             }
 
+            // Validar descuento de la fundación
+            if (medicamento.Descuento < 0)
+            {
+                ModelState.AddModelError(
+                    nameof(medicamento.Descuento),
+                    "El descuento no puede ser negativo.");
+            }
+
+            if (medicamento.Descuento > medicamento.Costo)
+            {
+                ModelState.AddModelError(
+                    nameof(medicamento.Descuento),
+                    "El descuento no puede superar el costo del medicamento.");
+            }
+
+            // Validar visita médica
             if (!medicamento.VisitaMedicaId.HasValue ||
                 medicamento.VisitaMedicaId.Value <= 0)
             {
@@ -164,8 +182,7 @@ namespace AsilioCabezaAlgodon.Controllers
             if (id <= 0)
                 return BadRequest();
 
-            // Solo cambia de Pendiente a Despachado.
-            // Evita despachar dos veces el mismo medicamento.
+            // Evitar despachar dos veces
             int actualizados = await _context.Medicamentos
                 .Where(m => m.Id == id &&
                             m.Estado == "Pendiente" &&

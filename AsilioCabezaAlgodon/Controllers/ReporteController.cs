@@ -105,16 +105,18 @@ namespace AsilioCabezaAlgodon.Controllers
                     idsVisitas.Contains(m.VisitaMedicaId.Value))
                 .ToListAsync();
 
+            // Consultas con descuento
             decimal totalConsultas = citas.Sum(c =>
                 Math.Max(0m, c.CostoConsulta - c.Descuento));
 
-            decimal totalLaboratorio =
-                examenes.Sum(e => e.Costo);
+            // Laboratorios con descuento
+            decimal totalLaboratorio = examenes.Sum(e =>
+                Math.Max(0m, e.Costo - e.Descuento));
 
-            decimal totalMedicamentos =
-                medicamentos
-                    .Where(m => m.Estado == "Despachado")
-                    .Sum(m => m.Costo);
+            // Solo medicamentos despachados, con descuento
+            decimal totalMedicamentos = medicamentos
+                .Where(m => m.Estado == "Despachado")
+                .Sum(m => Math.Max(0m, m.Costo - m.Descuento));
 
             decimal totalGeneral =
                 totalConsultas +
@@ -144,6 +146,7 @@ namespace AsilioCabezaAlgodon.Controllers
         {
             DateTime inicio = fechaInicio?.Date
                 ?? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+
             DateTime fin = fechaFin?.Date ?? DateTime.Today;
 
             ViewBag.FechaInicio = inicio;
@@ -156,13 +159,18 @@ namespace AsilioCabezaAlgodon.Controllers
                 .ToListAsync();
 
             ViewBag.ListaPacientes = new SelectList(
-                pacientes.Select(p => new {
+                pacientes.Select(p => new
+                {
                     p.Id,
                     NombreCompleto = p.Nombre + " " + p.Apellido
-                }), "Id", "NombreCompleto", pacienteId);
+                }),
+                "Id",
+                "NombreCompleto",
+                pacienteId);
 
             ViewBag.NombresPacientes = pacientes.ToDictionary(
-                p => p.Id, p => p.Nombre + " " + p.Apellido);
+                p => p.Id,
+                p => p.Nombre + " " + p.Apellido);
 
             ViewBag.TotalCobrado = 0m;
             ViewBag.CantidadPagos = 0;
@@ -176,40 +184,54 @@ namespace AsilioCabezaAlgodon.Controllers
 
             if (inicio > fin)
             {
-                ModelState.AddModelError("",
+                ModelState.AddModelError(
+                    "",
                     "La fecha inicial no puede ser mayor que la fecha final.");
+
                 return View(new List<Pago>());
             }
 
             if (pacienteId.HasValue &&
                 !pacientes.Any(p => p.Id == pacienteId.Value))
             {
-                ModelState.AddModelError("", "El paciente seleccionado no existe.");
+                ModelState.AddModelError(
+                    "",
+                    "El paciente seleccionado no existe.");
+
                 return View(new List<Pago>());
             }
 
             DateTime finExclusivo = fin.AddDays(1);
 
             var pagosQuery = _context.Pagos.Where(p =>
-                p.Fecha >= inicio && p.Fecha < finExclusivo);
+                p.Fecha >= inicio &&
+                p.Fecha < finExclusivo);
 
             var citasQuery = _context.CitasMedicas.Where(c =>
-                c.Fecha >= inicio && c.Fecha < finExclusivo);
+                c.Fecha >= inicio &&
+                c.Fecha < finExclusivo);
 
             if (pacienteId.HasValue)
             {
-                pagosQuery = pagosQuery.Where(p => p.PacienteId == pacienteId.Value);
-                citasQuery = citasQuery.Where(c => c.PacienteId == pacienteId.Value);
+                pagosQuery = pagosQuery.Where(p =>
+                    p.PacienteId == pacienteId.Value);
+
+                citasQuery = citasQuery.Where(c =>
+                    c.PacienteId == pacienteId.Value);
             }
 
             var pagos = await pagosQuery
-                .OrderByDescending(p => p.Fecha).ToListAsync();
+                .OrderByDescending(p => p.Fecha)
+                .ToListAsync();
+
             var citas = await citasQuery
-                .OrderByDescending(c => c.Fecha).ToListAsync();
+                .OrderByDescending(c => c.Fecha)
+                .ToListAsync();
 
             // Laboratorios por fecha de examen.
             // Medicamentos por fecha de visita.
-            var citasPacienteQuery = _context.CitasMedicas.AsQueryable();
+            var citasPacienteQuery =
+                _context.CitasMedicas.AsQueryable();
 
             if (pacienteId.HasValue)
             {
@@ -218,46 +240,62 @@ namespace AsilioCabezaAlgodon.Controllers
             }
 
             var idsCitasPaciente = await citasPacienteQuery
-                .Select(c => c.Id).ToListAsync();
+                .Select(c => c.Id)
+                .ToListAsync();
 
             var visitasPaciente = await _context.VisitasMedicas
                 .Where(v => idsCitasPaciente.Contains(v.CitaMedicaId))
                 .ToListAsync();
 
             var idsVisitasPaciente = visitasPaciente
-                .Select(v => v.Id).ToList();
+                .Select(v => v.Id)
+                .ToList();
 
             var idsVisitasEnPeriodo = visitasPaciente
-                .Where(v => v.Fecha >= inicio && v.Fecha < finExclusivo)
-                .Select(v => v.Id).ToList();
+                .Where(v =>
+                    v.Fecha >= inicio &&
+                    v.Fecha < finExclusivo)
+                .Select(v => v.Id)
+                .ToList();
 
             var examenes = await _context.ExamenesLaboratorio
-                .Where(e => idsVisitasPaciente.Contains(e.VisitaMedicaId)
-                    && e.Fecha >= inicio && e.Fecha < finExclusivo)
-                .OrderByDescending(e => e.Fecha).ToListAsync();
+                .Where(e =>
+                    idsVisitasPaciente.Contains(e.VisitaMedicaId) &&
+                    e.Fecha >= inicio &&
+                    e.Fecha < finExclusivo)
+                .OrderByDescending(e => e.Fecha)
+                .ToListAsync();
 
             var medicamentos = await _context.Medicamentos
-                .Where(m => m.VisitaMedicaId.HasValue
-                    && idsVisitasEnPeriodo.Contains(m.VisitaMedicaId.Value)
-                    && m.Estado == "Despachado")
+                .Where(m =>
+                    m.VisitaMedicaId.HasValue &&
+                    idsVisitasEnPeriodo.Contains(m.VisitaMedicaId.Value) &&
+                    m.Estado == "Despachado")
                 .ToListAsync();
 
             decimal totalConsultas = citas.Sum(c =>
                 Math.Max(0m, c.CostoConsulta - c.Descuento));
 
-            decimal totalLaboratorio = examenes.Sum(e => e.Costo);
-            decimal totalMedicamentos = medicamentos.Sum(m => m.Costo);
+            decimal totalLaboratorio = examenes.Sum(e =>
+                Math.Max(0m, e.Costo - e.Descuento));
+
+            decimal totalMedicamentos = medicamentos.Sum(m =>
+                Math.Max(0m, m.Costo - m.Descuento));
 
             ViewBag.TotalCobrado = pagos.Sum(p => p.Monto);
             ViewBag.CantidadPagos = pagos.Count;
             ViewBag.CitasDetalle = citas;
             ViewBag.ExamenesDetalle = examenes;
             ViewBag.MedicamentosDetalle = medicamentos;
+
             ViewBag.TotalConsultas = totalConsultas;
             ViewBag.TotalLaboratorio = totalLaboratorio;
             ViewBag.TotalMedicamentos = totalMedicamentos;
+
             ViewBag.TotalGastosMedicos =
-                totalConsultas + totalLaboratorio + totalMedicamentos;
+                totalConsultas +
+                totalLaboratorio +
+                totalMedicamentos;
 
             return View(pagos);
         }
@@ -328,7 +366,9 @@ namespace AsilioCabezaAlgodon.Controllers
                 .ToListAsync();
 
             ViewBag.Paciente = paciente;
-            ViewBag.TotalLaboratorio = examenes.Sum(e => e.Costo);
+
+            ViewBag.TotalLaboratorio = examenes.Sum(e =>
+                Math.Max(0m, e.Costo - e.Descuento));
 
             return View(examenes);
         }
@@ -356,7 +396,8 @@ namespace AsilioCabezaAlgodon.Controllers
                 .ToListAsync();
 
             var medicamentos = await _context.Medicamentos
-                .Where(m => m.VisitaMedicaId.HasValue &&
+                .Where(m =>
+                    m.VisitaMedicaId.HasValue &&
                     visitas.Contains(m.VisitaMedicaId.Value))
                 .ToListAsync();
 
@@ -364,12 +405,12 @@ namespace AsilioCabezaAlgodon.Controllers
 
             ViewBag.TotalMedicamentos = medicamentos
                 .Where(m => m.Estado == "Despachado")
-                .Sum(m => m.Costo);
+                .Sum(m => Math.Max(0m, m.Costo - m.Descuento));
 
             return View(medicamentos);
         }
 
-        // Saldos pendientes
+        // Saldos pendientes de consultas
         [HttpGet]
         public async Task<IActionResult> SaldosPendientes()
         {
@@ -387,7 +428,11 @@ namespace AsilioCabezaAlgodon.Controllers
             ViewBag.NombresPacientes = pacientes;
 
             ViewBag.TotalPendiente = citas.Sum(c =>
-                c.CostoConsulta - c.Descuento - c.MontoPagado);
+                Math.Max(
+                    0m,
+                    c.CostoConsulta -
+                    c.Descuento -
+                    c.MontoPagado));
 
             return View(citas);
         }
@@ -418,7 +463,8 @@ namespace AsilioCabezaAlgodon.Controllers
                 .ToListAsync();
 
             var medicamentos = await _context.Medicamentos
-                .Where(m => m.VisitaMedicaId.HasValue &&
+                .Where(m =>
+                    m.VisitaMedicaId.HasValue &&
                     idsVisitas.Contains(m.VisitaMedicaId.Value))
                 .ToListAsync();
 
@@ -459,7 +505,8 @@ namespace AsilioCabezaAlgodon.Controllers
                 .ToListAsync();
 
             var medicamentos = await _context.Medicamentos
-                .Where(m => m.VisitaMedicaId.HasValue &&
+                .Where(m =>
+                    m.VisitaMedicaId.HasValue &&
                     idsVisitas.Contains(m.VisitaMedicaId.Value))
                 .ToListAsync();
 

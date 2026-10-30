@@ -128,6 +128,9 @@ namespace AsilioCabezaAlgodon.Migrations
                     b.Property<decimal>("Costo")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("Descuento")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
@@ -281,6 +284,9 @@ namespace AsilioCabezaAlgodon.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Costo")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Descuento")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Dosis")
